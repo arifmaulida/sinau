@@ -2,180 +2,153 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <!-- Pastikan tampilan responsif di semua perangkat -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MAIN TEKA-TEKI YUK...</title>
+    <title>Kode Rahasia SMP 9</title>
     <style>
-        /* Mengatur font dan warna latar belakang yang soft */
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f0f9f9; /* Soft light cyan */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
+        /* CSS (styling) */
+        body { 
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #e6f0ff; /* Warna latar belakang lembut */
+            color: #333; 
+            text-align: center; 
+            padding: 20px; 
         }
-
-        /* Styling container utama */
-        .container {
-            background-color: #ffffff;
-            padding: 35px 25px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            max-width: 450px;
-            width: 100%;
+        .container { 
+            max-width: 700px; 
+            margin: 20px auto; 
+            background: #fff; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); 
+        }
+        h1 { 
+            color: #004d99; /* Biru tua */
+            margin-bottom: 5px;
+        }
+        .soal-box { 
+            border: 1px solid #b3d1ff; /* Border lebih cerah */
+            background-color: #f7faff;
+            padding: 15px; 
+            margin-bottom: 20px; 
+            border-radius: 8px; 
+            text-align: left; 
+            transition: box-shadow 0.3s;
+        }
+        .soal-box:hover {
+            box-shadow: 0 0 10px rgba(0, 77, 153, 0.2);
+        }
+        input[type="number"] { 
+            width: 100px; 
+            padding: 10px; 
+            margin-top: 10px; 
+            border: 2px solid #ccc; 
+            border-radius: 6px; 
             text-align: center;
-            border: 1px solid #e0f2f1; /* Garis tepi soft */
         }
-
-        /* Styling judul */
-        h1 {
-            color: #26a69a; /* Warna teal yang menyegarkan */
-            font-size: 1.8rem;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #b2dfdb;
-            padding-bottom: 10px;
-        }
-
-        /* Styling teks teka-teki */
-        .puzzle-text {
-            font-size: 1.1em;
-            margin-bottom: 25px;
-            color: #555;
-            font-style: italic;
-        }
-
-        /* Styling input jawaban */
-        #jawaban {
-            padding: 10px;
-            margin-bottom: 20px;
-            border: 2px solid #b2dfdb;
-            border-radius: 8px;
-            font-size: 1em;
-            width: 80%;
-            text-align: center;
-            transition: border-color 0.3s;
-        }
-
-        #jawaban:focus {
-            border-color: #26a69a;
-            outline: none;
-        }
-
-        /* Styling tombol */
-        button {
-            background-color: #4db6ac; /* Warna teal sedang */
-            color: white;
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
+        button { 
+            padding: 12px 25px; 
+            background-color: #007bff; /* Warna tombol utama */
+            color: white; 
+            border: none; 
+            border-radius: 25px; 
+            cursor: pointer; 
+            margin-top: 30px; 
+            font-size: 17px; 
             font-weight: bold;
-            transition: background-color 0.3s ease, transform 0.1s;
+            transition: background-color 0.3s, transform 0.1s;
         }
-
-        button:hover {
-            background-color: #26a69a;
+        button:hover { 
+            background-color: #0056b3; 
+            transform: translateY(-2px);
         }
-
-        button:active {
-            transform: scale(0.98);
+        #hasil { 
+            margin-top: 30px; 
+            padding: 20px; 
+            border-radius: 10px; 
+            font-size: 1.2em; 
+            font-weight: bold; 
+            min-height: 50px; 
         }
-
-        /* Styling area feedback */
-        #feedback {
-            margin-top: 25px;
-            padding: 10px;
-            border-radius: 8px;
-            font-weight: bold;
-            min-height: 20px; /* Memastikan ruang selalu ada */
+        .benar { 
+            background-color: #d4edda; 
+            color: #155724; 
+            border: 1px solid #c3e6cb;
         }
-
-        .correct {
-            color: #388e3c; /* Hijau untuk benar */
-            background-color: #e8f5e9;
-            border: 1px solid #388e3c;
+        .salah { 
+            background-color: #f8d7da; 
+            color: #721c24; 
+            border: 1px solid #f5c6cb;
         }
-
-        .incorrect {
-            color: #d32f2f; /* Merah untuk salah */
-            background-color: #ffebee;
-            border: 1px solid #d32f2f;
-        }
-
-        /* Responsif untuk tampilan mobile */
-        @media (max-width: 500px) {
-            .container {
-                padding: 20px;
-            }
-            h1 {
-                font-size: 1.5rem;
-            }
-            .puzzle-text {
-                font-size: 1em;
-            }
-            #jawaban {
-                width: 90%;
-            }
+        p {
+            line-height: 1.6;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <!-- Judul Website -->
-        <h1>MAIN TEKA-TEKI YUK... 🧠</h1>
-
-        <!-- Teks Teka-teki -->
-        <p class="puzzle-text">
-            "Aku adalah seekor hewan. Jumlah kakiku ada empat buah. Aku memiliki ekor. Aku juga memiliki belalai. <br><b>Siapakah aku?"
-        </b></p>
-
-        <!-- Kotak Input Jawaban -->
-        <input type="text" id="jawaban" placeholder="Jawab di sini..." onkeypress="if(event.key === 'Enter') cekJawaban()">
-
-        <!-- Tombol untuk Cek Jawaban -->
-        <button onclick="cekJawaban()">Cek Jawaban</button>
-
-        <!-- Area untuk Menampilkan Feedback -->
-        <div id="feedback"></div>
+<div class="container">
+    <h1>🔑 Kode Rahasia Matematika Kelas 9 🔑</h1>
+    <p>Pecahkan 3 soal di bawah. Setiap jawaban adalah **bilangan bulat** dan menjadi bagian dari **Kode Rahasia Akhir (A, B, C)**. </p>
+    
+    <div class="soal-box">
+        <h3>Soal 1 (Kode A: Akar Kuadrat)</h3>
+        <p>Carilah nilai **positif** yang paling besar dari x pada persamaan kuadrat: x^2 - 7x + 10 = 0.</p>
+        <p>Jawaban (A): <input type="number" id="jawabanA" placeholder="Angka A"></p>
     </div>
 
-    <script>
-        // Logika JavaScript untuk memeriksa jawaban
-        function cekJawaban() {
-            // Dapatkan input dari pengguna
-            const inputJawaban = document.getElementById('jawaban').value;
-            const feedbackElement = document.getElementById('feedback');
+    <div class="soal-box">
+        <h3>Soal 2 (Kode B: Titik Puncak Fungsi Kuadrat)</h3>
+        <p>Tentukan nilai y (ordinat) dari titik puncak grafik fungsi kuadrat: y = x^2 + 4x + 6.</p>
+        <p>Jawaban (B): <input type="number" id="jawabanB" placeholder="Angka B"></p>
+    </div>
 
-            // Kunci Jawaban (Disembunyikan dalam kode)
-            // Menggunakan array untuk mendukung berbagai variasi ejaan atau format jawaban.
-            const jawabanBenarList = ["gajah", "gaj"]; 
+    <div class="soal-box">
+        <h3>Soal 3 (Kode C: Refleksi Geometri)</h3>
+        <p>Titik P(1, 4) direfleksikan terhadap garis y = 5. Jika bayangannya adalah P'(x', y'), berapakah nilai dari x' + y'?</p>
+        <p>Jawaban (C): <input type="number" id="jawabanC" placeholder="Angka C"></p>
+    </div>
+    
+    <button onclick="cekJawaban()">Buka Pesan Rahasia!</button>
+    
+    <div id="hasil"></div>
+</div>
 
-            // Format jawaban pengguna: hapus spasi di awal/akhir dan ubah ke huruf kecil
-            const jawabanUserFormatted = inputJawaban.trim().toLowerCase();
+<script>
+    // JavaScript (Logika Permainan)
+    function cekJawaban() {
+        // Ambil nilai dari input dan konversi ke bilangan bulat
+        const A = parseInt(document.getElementById('jawabanA').value);
+        const B = parseInt(document.getElementById('jawabanB').value);
+        const C = parseInt(document.getElementById('jawabanC').value);
 
-            // Cek apakah jawaban pengguna ada dalam daftar jawaban yang benar
-            if (jawabanBenarList.includes(jawabanUserFormatted)) {
-                // Jawaban Benar
-                feedbackElement.textContent = "Jawaban Anda benar, hebat! 🎉";
-                feedbackElement.className = "correct";
-            } else {
-                // Jawaban Salah
-                feedbackElement.textContent = "Jawaban Anda salah, silakan coba lagi. 🤔";
-                feedbackElement.className = "incorrect";
-            }
+        // Kunci Jawaban yang telah diverifikasi
+        const KUNCI_A = 5; // x^2 - 7x + 10 = 0 -> (x-2)(x-5)=0. Akar terbesar adalah 5.
+        const KUNCI_B = 2; // y = x^2 + 4x + 6. x puncak = -2. y puncak = 4 - 8 + 6 = 2.
+        const KUNCI_C = 7; // P(1, 4) refleksi y=5. P'(1, 2(5)-4) = P'(1, 6). x'+y' = 1+6 = 7.
 
-            // Opsional: Kosongkan kotak input setelah pengecekan
-            document.getElementById('jawaban').value = '';
+        const hasilDiv = document.getElementById('hasil');
+
+        // Pastikan semua input sudah terisi
+        if (isNaN(A) || isNaN(B) || isNaN(C)) {
+            hasilDiv.className = 'salah';
+            hasilDiv.innerHTML = `Mohon masukkan angka di ketiga kotak jawaban terlebih dahulu!`;
+            return;
         }
-    </script>
+
+        // Cek kecocokan kode
+        if (A === KUNCI_A && B === KUNCI_B && C === KUNCI_C) {
+            hasilDiv.className = 'benar';
+            hasilDiv.innerHTML = `
+                <p>🎉 Selamat! KODE RAHASIA BENAR: **{A}, {B}, {C}**.</p>
+                <p>Pesan Rahasia: **Ketekunan Anda dalam Matematika adalah Kunci untuk Memecahkan Masalah Kehidupan!**</p>
+            `;
+        } else {
+            hasilDiv.className = 'salah';
+            hasilDiv.innerHTML = `Kode Rahasia **{A}, {B}, {C}** SALAH. Coba periksa kembali perhitungan dan pastikan semua jawaban adalah bilangan bulat.`;
+        }
+    }
+</script>
 
 </body>
 </html>
-
-
