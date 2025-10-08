@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAIN TEKA-TEKI YUK...</title>
+    <style>
+        /* Mengatur font dan warna latar belakang yang soft */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f9f9; /* Soft light cyan */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Styling container utama */
+        .container {
+            background-color: #ffffff;
+            padding: 35px 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+            border: 1px solid #e0f2f1; /* Garis tepi soft */
+        }
+
+        /* Styling judul */
+        h1 {
+            color: #26a69a; /* Warna teal yang menyegarkan */
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #b2dfdb;
+            padding-bottom: 10px;
+        }
+
+        /* Styling teks teka-teki */
+        .puzzle-text {
+            font-size: 1.1em;
+            margin-bottom: 25px;
+            color: #555;
+            font-style: italic;
+        }
+
+        /* Styling input jawaban */
+        #jawaban {
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #b2dfdb;
+            border-radius: 8px;
+            font-size: 1em;
+            width: 80%;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+
+        #jawaban:focus {
+            border-color: #26a69a;
+            outline: none;
+        }
+
+        /* Styling tombol */
+        button {
+            background-color: #4db6ac; /* Warna teal sedang */
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.1s;
+        }
+
+        button:hover {
+            background-color: #26a69a;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        /* Styling area feedback */
+        #feedback {
+            margin-top: 25px;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            min-height: 20px; /* Memastikan ruang selalu ada */
+        }
+
+        .correct {
+            color: #388e3c; /* Hijau untuk benar */
+            background-color: #e8f5e9;
+            border: 1px solid #388e3c;
+        }
+
+        .incorrect {
+            color: #d32f2f; /* Merah untuk salah */
+            background-color: #ffebee;
+            border: 1px solid #d32f2f;
+        }
+
+        /* Responsif untuk tampilan mobile */
+        @media (max-width: 500px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+            .puzzle-text {
+                font-size: 1em;
+            }
+            #jawaban {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Judul Website -->
+        <h1>MAIN TEKA-TEKI YUK... 🧠</h1>
+
+        <!-- Teks Teka-teki -->
+        <p class="puzzle-text">
+            "Aku adalah seekor hewan. Jumlah kakiku ada empat buah. Aku memiliki ekor. Aku juga memiliki belalai. <br>Siapakah aku?"
+        </p>
+
+        <!-- Kotak Input Jawaban -->
+        <input type="text" id="jawaban" placeholder="Jawab di sini..." onkeypress="if(event.key === 'Enter') cekJawaban()">
+
+        <!-- Tombol untuk Cek Jawaban -->
+        <button onclick="cekJawaban()">Cek Jawaban</button>
+
+        <!-- Area untuk Menampilkan Feedback -->
+        <div id="feedback"></div>
+    </div>
+
+    <script>
+        // Logika JavaScript untuk memeriksa jawaban
+        function cekJawaban() {
+            // Dapatkan input dari pengguna
+            const inputJawaban = document.getElementById('jawaban').value;
+            const feedbackElement = document.getElementById('feedback');
+
+            // Kunci Jawaban (Disembunyikan dalam kode)
+            // Menggunakan array untuk mendukung berbagai variasi ejaan atau format jawaban.
+            const jawabanBenarList = ["gajah", "gaj"]; 
+
+            // Format jawaban pengguna: hapus spasi di awal/akhir dan ubah ke huruf kecil
+            const jawabanUserFormatted = inputJawaban.trim().toLowerCase();
+
+            // Cek apakah jawaban pengguna ada dalam daftar jawaban yang benar
+            if (jawabanBenarList.includes(jawabanUserFormatted)) {
+                // Jawaban Benar
+                feedbackElement.textContent = "Jawaban Anda benar, hebat! 🎉";
+                feedbackElement.className = "correct";
+            } else {
+                // Jawaban Salah
+                feedbackElement.textContent = "Jawaban Anda salah, silakan coba lagi. 🤔";
+                feedbackElement.className = "incorrect";
+            }
+
+            // Opsional: Kosongkan kotak input setelah pengecekan
+            document.getElementById('jawaban').value = '';
+        }
+    </script>
+
+</body>
+</html>
