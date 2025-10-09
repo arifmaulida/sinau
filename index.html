@@ -3,574 +3,360 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ayo Belajar Tabung</title>
-    <!-- Memuat Tailwind CSS -->
+    <title>Flipbook Interaktif</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Menggunakan font Inter dan memastikan body mengisi layar */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        /* Mengatur font untuk seluruh halaman */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #eef2ff; /* Warna latar belakang soft */
+            background-color: #f7f7f7;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            padding: 20px;
+            overflow: hidden; /* Menyembunyikan scrollbar yang mungkin muncul */
         }
-        /* Container modul dengan ukuran yang diminta (1800x1000px) dan estetika lembut */
-        #module-container {
-            width: 1800px;
-            height: 1000px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            border-radius: 2rem; /* Sudut membulat */
-            overflow: hidden;
-            background-color: #ffffff; /* Latar belakang halaman putih */
+
+        /* Container utama flipbook */
+        .book-container {
+            perspective: 2000px; /* Jarak pandang untuk efek 3D */
             display: flex;
-            flex-direction: column;
-            transition: all 0.3s ease-in-out;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            width: 100%; /* Lebar penuh */
+            height: 100%; /* Tinggi penuh */
         }
-        /* Style untuk halaman (page) */
+
+        /* Elemen buku (shell) */
+        .book {
+            width: 300px; /* Lebar standar buku */
+            height: 500px; /* Tinggi standar buku */
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s ease-in-out;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+
+        /* Halaman buku */
         .page {
-            display: none;
+            position: absolute;
             width: 100%;
             height: 100%;
-            padding: 4rem;
-            position: absolute;
-            top: 0;
-            left: 0;
+            transform-origin: left center;
+            transition: transform 0.8s ease-in-out;
+            backface-visibility: hidden; /* Menyembunyikan sisi belakang */
+            border-radius: 8px;
+            overflow: hidden;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
         }
-        .page.active {
+
+        /* Konten halaman (gambar) */
+        .page img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Memastikan gambar menutupi halaman tanpa terdistorsi */
             display: block;
         }
-        /* Style untuk tombol navigasi */
-        .nav-button {
-            transition: background-color 0.2s, transform 0.1s;
+
+        /* Menyesuaikan lebar/tinggi buku berdasarkan rasio gambar */
+        /* Rasio gambar adalah sekitar 1080x1920 (9:16) */
+        .book {
+            width: min(90vw, 300px); /* Maks 300px atau 90% lebar viewport */
+            height: calc(min(90vw, 300px) * 16 / 9); /* Menjaga rasio 9:16 */
+            max-height: 90vh; /* Tidak boleh lebih tinggi dari 90% viewport height */
         }
-        .nav-button:hover {
-            transform: translateY(-1px);
+
+        /* Halaman depan (cover) */
+        .page:first-child {
+            z-index: 100;
         }
-        .nav-button:active {
-            transform: translateY(1px);
+
+        /* Halaman ganjil (halaman kanan saat terbuka) */
+        .page:nth-child(odd) {
+            border-left: 1px solid #ccc;
         }
-        /* Style kustom untuk Drag & Drop */
-        .draggable {
-            cursor: grab;
-            user-select: none;
-            background-color: #a5b4fc; /* soft blue */
-            border: 2px solid #6366f1;
-            padding: 0.75rem 1.5rem; /* Ukuran padding diperbesar */
-            border-radius: 9999px;
-            font-weight: 600;
-            color: white;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+
+        /* Halaman genap (halaman kiri saat terbuka) */
+        .page:nth-child(even) {
+            transform-origin: right center; /* Titik putar di kanan */
+            transform: rotateY(180deg);
+            z-index: 1;
+            border-right: 1px solid #ccc;
+        }
+
+        /* State halaman yang sudah terbalik */
+        .flipped-front {
+            transform: rotateY(-180deg); /* Membalik halaman ke kiri */
+            z-index: 99;
+        }
+
+        .flipped-back {
+            transform: rotateY(0deg); /* Menampilkan halaman belakang yang sudah terbalik (sekarang menjadi halaman kiri) */
             z-index: 10;
-            font-size: 1.25rem; /* Ukuran font diperbesar (text-xl) */
-            margin: 0.5rem; /* Jarak antar item */
-            display: inline-block; /* Untuk layout horizontal/flex */
         }
-        .dropzone {
-            border: 2px dashed #9ca3af;
-            background-color: #f3f4f6;
-            text-align: center;
-            line-height: 2.5rem;
-            color: #4b5563;
-            border-radius: 0.75rem; /* Sudut membulat */
-            min-width: 130px; /* Lebar minimum disesuaikan */
-            min-height: 50px; /* Tinggi minimum ditingkatkan */
-            transition: background-color 0.2s;
-            font-size: 1.25rem; /* Ukuran font dropzone (text-xl) */
+
+        /* Tombol navigasi */
+        .nav-button {
+            z-index: 200;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 1rem;
+            border-radius: 50%;
+            background-color: rgba(0, 0, 0, 0.4);
+            color: white;
+            transition: background-color 0.3s, transform 0.1s;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            font-size: 1.5rem;
+            user-select: none;
+            line-height: 1; /* Agar simbol panah di tengah */
         }
-        .dropzone.hover {
-            background-color: #d1fae5; /* soft green on hover */
-            border-color: #10b981;
+
+        .nav-button:hover {
+            background-color: rgba(0, 0, 0, 0.6);
         }
-        .dropzone.dropped {
-            background-color: #dbeafe; /* light blue on drop */
-            border-color: #3b82f6;
-            color: #1e3a8a;
-            font-weight: 600;
+        
+        .nav-button:active {
+            transform: translateY(-50%) scale(0.95);
         }
-        /* Mengatur posisi mutlak dalam container relative */
-        #page-2-content {
-            position: relative;
+
+        /* Posisi tombol */
+        #prev-btn { left: 10px; }
+        #next-btn { right: 10px; }
+
+        /* Menyembunyikan tombol saat tidak diperlukan */
+        .nav-button.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Styling for the page number display */
+        #page-info {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            z-index: 200;
         }
     </style>
 </head>
-<body>
+<body class="bg-gray-100 flex flex-col justify-center items-center h-screen w-screen">
 
-<div id="module-container" class="relative">
-
-    <!-- Konten Halaman 1 (Cover) -->
-    <div id="page-1" class="page active flex flex-col justify-center items-center text-center bg-indigo-50">
-        <h1 class="text-7xl font-extrabold text-indigo-800 mb-8 tracking-tight">
-            Ayo Belajar dan Mengenal <br>Bangun Ruang Tabung!
-        </h1>
-
-        <!-- Ilustrasi Tabung (Placeholder SVG) -->
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" class="w-96 h-auto mb-10">
-            <defs>
-                <ellipse id="top-base" cx="200" cy="50" rx="100" ry="30" style="fill:#93c5fd;stroke:#3b82f6;stroke-width:3"/>
-                <ellipse id="bottom-base" cx="200" cy="250" rx="100" ry="30" style="fill:#60a5fa;stroke:#3b82f6;stroke-width:3"/>
-                <path id="side-curve-left" d="M100,50 Q100,250 100,250" style="fill:none;stroke:#3b82f6;stroke-width:3"/>
-                <path id="side-curve-right" d="M300,50 Q300,250 300,250" style="fill:none;stroke:#3b82f6;stroke-width:3"/>
-            </defs>
-            <!-- Selimut Tabung -->
-            <rect x="100" y="50" width="200" height="200" style="fill:#bfdbfe;fill-opacity:0.8;"/>
-            <!-- Atas Tabung -->
-            <use href="#top-base"/>
-            <!-- Garis sisi lengkung -->
-            <path d="M100,50 L100,250 M300,50 L300,250" style="stroke:#3b82f6;stroke-width:3"/>
-            <!-- Bawah Tabung (Garis depan putus-putus) -->
-            <ellipse cx="200" cy="250" rx="100" ry="30" style="fill:none;stroke:#3b82f6;stroke-width:3;stroke-dasharray: 8 4;"/>
-            <!-- Bawah Tabung (Garis belakang) -->
-            <path d="M100,250 A100,30 0 0 1 300,250" style="fill:none;stroke:#3b82f6;stroke-width:3;"/>
-            <!-- Tengah -->
-            <line x1="200" y1="50" x2="200" y2="250" style="stroke:#1e40af;stroke-width:2;stroke-dasharray: 4 2;"/>
-        </svg>
-
-        <h3 class="text-3xl font-semibold text-indigo-600 mb-2 mt-4">
-            Oleh : Guru Matematika MTs NU TBS
-        </h3>
-        <p class="text-xl text-gray-700 mt-12 px-20">
-            Madrasah Tsanawiyah NU Tasywiquth Thullab Salafiyah (TBS) Kudus
-        </p>
-    </div>
-
-    <!-- Konten Halaman 2 (Unsur-unsur Tabung + Drag & Drop) -->
-    <div id="page-2" class="page bg-white p-12" style="padding-top: 3rem;">
-        <h2 class="text-4xl font-bold text-indigo-800 mb-6 border-b-4 border-indigo-400 pb-2">
-            2. Mengenal Unsur-unsur Bangun Ruang Tabung
-        </h2>
-
-        <div id="page-2-content" class="flex h-[800px] gap-8">
-            <!-- Bagian Kiri: Penjelasan -->
-            <div class="w-2/5 p-4 space-y-4 text-lg text-gray-700">
-                <p>Tabung adalah bangun ruang sisi lengkung yang dibentuk oleh dua buah lingkaran identik (sebagai alas dan tutup) yang sejajar dan sebuah persegi panjang yang mengelilingi kedua lingkaran tersebut (sebagai selimut tabung).</p>
-                
-                <p class="font-semibold text-indigo-700">Unsur-unsur Tabung:</p>
-                <ul class="list-disc list-inside space-y-2 ml-4">
-                    <li><strong class="text-indigo-800">Sisi Alas dan Tutup:</strong> Berbentuk lingkaran, berukuran sama, dan sejajar.</li>
-                    <li><strong class="text-indigo-800">Jari-jari (r):</strong> Jarak dari titik pusat ke tepi lingkaran (alas/tutup).</li>
-                    <li><strong class="text-indigo-800">Tinggi (t):</strong> Jarak antara sisi alas dan sisi tutup.</li>
-                    <li><strong class="text-indigo-800">Selimut Tabung:</strong> Sisi lengkung yang menghubungkan sisi alas dan tutup.</li>
-                    <li>Tabung memiliki <strong class="text-red-600">3 sisi</strong> (alas, tutup, selimut) dan <strong class="text-red-600">2 rusuk</strong> lengkung.</li>
-                </ul>
-                <div id="dd-feedback" class="text-xl font-bold mt-12 pt-4 border-t-2 border-indigo-200"></div>
-            </div>
-
-            <!-- Bagian Kanan: Ilustrasi & Drag and Drop -->
-            <div class="w-3/5 bg-gray-50 p-6 rounded-xl shadow-inner relative flex flex-col items-center">
-                <h3 class="text-xl font-bold text-gray-800 mb-2">Kegiatan Siswa: Tarik dan Lepas (Drag and Drop)</h3>
-                <p class="text-sm text-gray-600 mb-6">Tarik nama-nama bagian di bawah ini ke kolom yang sesuai pada gambar tabung.</p>
-
-                <!-- Draggable Items (Horizontal arrangement) -->
-                <div id="draggable-items" class="flex flex-wrap justify-center mb-10">
-                    <div id="drag1" class="draggable" draggable="true">Sisi Alas</div>
-                    <div id="drag2" class="draggable" draggable="true">Tinggi (t)</div>
-                    <div id="drag3" class="draggable" draggable="true">Sisi Tutup</div>
-                    <div id="drag4" class="draggable" draggable="true">Jari-jari (r)</div>
-                    <div id="drag5" class="draggable" draggable="true">Selimut Tabung</div>
-                </div>
-
-                <!-- Gambar Tabung (Posisi Dropzone relatif) -->
-                <div class="relative w-[500px] h-[500px]">
-                    <!-- Ilustrasi Tabung (Sama seperti Page 1, tapi lebih detail) -->
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" class="w-full h-full">
-                        <defs>
-                            <ellipse id="top-base-drag" cx="200" cy="50" rx="100" ry="30" style="fill:#d1d5db;stroke:#4b5563;stroke-width:2"/>
-                            <path id="bottom-base-drag" d="M100,250 A100,30 0 1 0 300,250" style="fill:none;stroke:#4b5563;stroke-width:2;stroke-dasharray: 6 3;"/>
-                        </defs>
-                        <!-- Selimut Tabung -->
-                        <rect x="100" y="50" width="200" height="200" style="fill:#e0f2f1;fill-opacity:0.8;"/>
-                        <path d="M100,50 L100,250 M300,50 L300,250" style="stroke:#4b5563;stroke-width:2"/>
-                        <!-- Atas Tabung -->
-                        <use href="#top-base-drag"/>
-                        <!-- Bawah Tabung (Lengkungan depan solid) -->
-                        <path d="M100,250 A100,30 0 0 0 300,250" style="fill:#ccfbf1;stroke:#4b5563;stroke-width:2;"/>
-
-                        <!-- Garis Jari-jari (r) -->
-                        <line x1="200" y1="50" x2="300" y2="50" style="stroke:#ef4444;stroke-width:2"/>
-                        <!-- Garis Tinggi (t) -->
-                        <line x1="150" y1="50" x2="150" y2="250" style="stroke:#f97316;stroke-width:2;stroke-dasharray: 4 2;"/>
-
-                        <!-- DROPZONE DENGAN POSISI BARU -->
-
-                        <!-- Dropzone Sisi Tutup (Atas) -->
-                        <foreignObject x="140" y="-10" width="120" height="50">
-                            <div id="drop-tutup" class="dropzone" data-target="Sisi Tutup"></div>
-                        </foreignObject>
-
-                        <!-- Dropzone Sisi Alas (Bawah) -->
-                        <foreignObject x="140" y="260" width="120" height="50">
-                            <div id="drop-alas" class="dropzone" data-target="Sisi Alas"></div>
-                        </foreignObject>
-
-                        <!-- Dropzone Selimut (Tengah) -->
-                        <foreignObject x="80" y="160" width="240" height="50">
-                            <div id="drop-selimut" class="dropzone" data-target="Selimut Tabung"></div>
-                        </foreignObject>
-
-                        <!-- Dropzone Jari-jari (r) (Kanan) -->
-                        <foreignObject x="320" y="40" width="130" height="50">
-                            <div id="drop-r" class="dropzone" data-target="Jari-jari (r)"></div>
-                        </foreignObject>
-
-                        <!-- Dropzone Tinggi (t) (Kiri) -->
-                        <foreignObject x="-50" y="130" width="130" height="50">
-                            <div id="drop-t" class="dropzone" data-target="Tinggi (t)"></div>
-                        </foreignObject>
-                    </svg>
-
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Konten Halaman 3 (Luas Permukaan Tabung + Contoh Soal) -->
-    <div id="page-3" class="page bg-white p-12" style="padding-top: 3rem;">
-        <h2 class="text-4xl font-bold text-indigo-800 mb-8 border-b-4 border-indigo-400 pb-2">
-            3. Menghitung Luas Permukaan Tabung
-        </h2>
-
-        <div class="flex gap-10 h-[800px]">
-            <!-- Kiri: Penjelasan, Ilustrasi Jaring-Jaring, dan Rumus -->
-            <div class="w-1/2 space-y-4 text-gray-700 text-lg">
-                <p>Luas Permukaan Tabung ($L$) adalah total luas dari semua sisi yang membentuk tabung. Jika tabung dibuka (dibuat jaring-jaringnya), akan tampak:</p>
-
-                <!-- ILUSTRASI JARING-JARING TABUNG BARU -->
-                <div class="flex flex-col items-center my-6 p-4 bg-blue-50 rounded-xl shadow-inner border border-blue-200">
-                    <h4 class="text-xl font-semibold text-blue-800 mb-4">Jaring-Jaring Tabung (Asal Rumus)</h4>
-                    <svg width="400" height="350" viewBox="0 0 400 350" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Lingkaran Atas (Tutup) -->
-                        <circle cx="200" cy="50" r="40" fill="#93c5fd" stroke="#3b82f6" stroke-width="2"/>
-                        <text x="200" y="50" text-anchor="middle" font-size="14" fill="#1e40af" font-weight="bold">Tutup ($\pi r^2$)</text>
-                        <line x1="200" y1="50" x2="240" y2="50" stroke="#ef4444" stroke-width="1" stroke-dasharray="3 2"/>
-                        <text x="220" y="40" font-size="12" fill="#ef4444">r</text>
-
-                        <!-- Selimut (Persegi Panjang) -->
-                        <rect x="50" y="100" width="300" height="150" fill="#e0f2f1" stroke="#4b5563" stroke-width="2"/>
-                        <text x="200" y="175" text-anchor="middle" font-size="16" fill="#4b5563" font-weight="bold">Selimut</text>
-
-                        <!-- Label Tinggi (t) (Lebar Selimut) -->
-                        <line x1="40" y1="100" x2="40" y2="250" stroke="#f97316" stroke-width="2"/>
-                        <polyline points="40,100 45,105 35,105 40,100" fill="#f97316"/>
-                        <polyline points="40,250 45,245 35,245 40,250" fill="#f97316"/>
-                        <text x="20" y="175" text-anchor="middle" font-size="16" fill="#f97316">t</text>
-
-                        <!-- Label Keliling/Panjang Selimut (2*pi*r) -->
-                        <line x1="50" y1="260" x2="350" y2="260" stroke="#3b82f6" stroke-width="2"/>
-                        <polyline points="50,260 55,255 55,265 50,260" fill="#3b82f6"/>
-                        <polyline points="350,260 345,255 345,265 350,260" fill="#3b82f6"/>
-                        <text x="200" y="275" text-anchor="middle" font-size="14" fill="#3b82f6">Keliling Alas ($2 \pi r$)</text>
-
-                        <!-- Lingkaran Bawah (Alas) -->
-                        <circle cx="200" cy="300" r="40" fill="#ccfbf1" stroke="#4b5563" stroke-width="2"/>
-                        <text x="200" y="300" text-anchor="middle" font-size="14" fill="#1e40af" font-weight="bold">Alas ($\pi r^2$)</text>
-                    </svg>
-                    <p class="text-sm text-blue-600 mt-2">Luas Permukaan = Luas Alas + Luas Tutup + Luas Selimut</p>
-                </div>
-                <!-- AKHIR ILUSTRASI JARING-JARING TABUNG -->
-
-                <div class="bg-yellow-50 p-6 rounded-xl shadow-md">
-                    <h3 class="text-2xl font-bold text-yellow-800 mb-3">Asal Rumus Luas Permukaan</h3>
-                    <p>Luas Permukaan Tabung ($L$) = Luas Alas + Luas Tutup + Luas Selimut</p>
-                    <p>Karena: Luas Alas = $\pi r^2$, Luas Tutup = $\pi r^2$, dan Luas Selimut = Panjang $\times$ Lebar = $2 \pi r \times t$</p>
-                    <div class="text-xl font-mono mt-4">
-                        <p>$$L = (\pi r^2) + (\pi r^2) + (2 \pi r t)$$</p>
-                        <p>$$L = 2 \pi r^2 + 2 \pi r t$$</p>
-                        <p class="font-bold text-indigo-700">$$L = 2 \pi r (r + t)$$</p>
-                    </div>
-                    <p class="text-sm mt-3">Keterangan: $r$ = jari-jari alas, $t$ = tinggi tabung, $\pi$ = $3,14$ atau $22/7$.</p>
-                </div>
-
-            </div>
-
-            <!-- Kanan: Contoh Soal -->
-            <div class="w-1/2 p-6 bg-green-50 rounded-xl shadow-lg border-2 border-green-300">
-                <h3 class="text-2xl font-bold text-green-800 mb-4">Contoh Soal</h3>
-                <p class="mb-4">Sebuah kaleng susu berbentuk tabung memiliki jari-jari alas $7$ cm dan tinggi $10$ cm. Berapakah luas permukaan kaleng susu tersebut? (Gunakan $\pi = 22/7$)</p>
-
-                <div class="bg-white p-4 rounded-lg shadow-inner">
-                    <h4 class="font-semibold text-xl mb-2 text-gray-800">Penyelesaian:</h4>
-                    <ul class="space-y-2 text-base">
-                        <li>Diketahui: $r = 7$ cm, $t = 10$ cm, $\pi = 22/7$</li>
-                        <li>Ditanya: Luas Permukaan Tabung ($L$)</li>
-                        <li>Rumus: $$L = 2 \pi r (r + t)$$</li>
-                        <li>Substitusi: $$L = 2 \cdot \frac{22}{7} \cdot 7 (7 + 10)$$</li>
-                        <li>Hitung: $$L = 2 \cdot 22 \cdot (17)$$</li>
-                        <li>Hitung: $$L = 44 \cdot 17$$</li>
-                        <li>Hasil: $$L = 748$$</li>
-                    </ul>
-                    <p class="mt-4 text-xl font-bold text-green-700">Jadi, luas permukaan kaleng susu tersebut adalah $748$ $\text{cm}^2$.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Konten Halaman 4 (Latihan Soal) -->
-    <div id="page-4" class="page bg-white p-12" style="padding-top: 3rem;">
-        <h2 class="text-4xl font-bold text-indigo-800 mb-8 border-b-4 border-indigo-400 pb-2">
-            4. Latihan: Mencari Luas Permukaan Tabung
-        </h2>
-
-        <div class="flex justify-center items-center h-[800px] flex-col space-y-8">
-            <div id="latihan-soal" class="bg-gray-100 p-8 rounded-2xl shadow-xl w-3/5 text-center border-4 border-indigo-200">
-                <h3 class="text-3xl font-bold text-gray-800 mb-4">Soal Latihan:</h3>
-                <p class="text-xl text-gray-700">Hitunglah luas permukaan sebuah tabung dengan:</p>
-                <p class="text-5xl font-extrabold text-indigo-600 my-6">Jari-jari (<span id="r-value">?</span> cm) dan Tinggi (<span id="t-value">?</span> cm)</p>
-                <p class="text-sm text-red-500">Gunakan $\pi = 3,14$ dan bulatkan hasil akhir hingga 2 angka desimal.</p>
-            </div>
-
-            <div class="w-3/5 flex flex-col items-center space-y-4">
-                <label for="jawaban-input" class="text-2xl font-semibold text-gray-800">Jawaban Anda ($ \text{cm}^2$):</label>
-                <input type="number" id="jawaban-input" placeholder="Masukkan angka di sini..."
-                       class="w-full max-w-sm p-4 text-center text-2xl border-4 border-indigo-400 rounded-xl focus:ring-4 focus:ring-indigo-300 transition duration-300" step="0.01">
-                <button onclick="checkAnswer()" id="check-btn"
-                        class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full shadow-lg nav-button text-xl">
-                    Periksa Jawaban
-                </button>
-                <button onclick="generateNewQuestion()"
-                        class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-6 rounded-full shadow-md nav-button text-base mt-2">
-                    Soal Baru
-                </button>
-            </div>
-
-            <div id="feedback-latihan" class="text-3xl font-bold mt-6"></div>
-        </div>
-    </div>
-
-    <!-- Kontrol Navigasi -->
-    <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-4">
-        <button id="prev-btn" onclick="changePage(-1)"
-                class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-3 px-6 rounded-full nav-button shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
-            &larr; Sebelumnya
+    <div class="book-container">
+        <!-- Tombol Kembali -->
+        <button id="prev-btn" class="nav-button left-4 hidden">
+            &lsaquo;
         </button>
-        <button id="next-btn" onclick="changePage(1)"
-                class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 px-6 rounded-full nav-button shadow-lg">
-            Selanjutnya &rarr;
+
+        <div id="book-element" class="book">
+            <!-- Halaman-halaman akan diisi di sini oleh JavaScript -->
+        </div>
+        
+        <!-- Tombol Selanjutnya -->
+        <button id="next-btn" class="nav-button right-4">
+            &rsaquo;
         </button>
     </div>
 
-</div>
+    <div id="page-info"></div>
 
-<script>
-    // --- Global State dan Inisialisasi ---
-    let currentPage = 1;
-    const totalPages = 4;
-    const PI = 3.14;
+    <script>
+        // Memperbarui sumber gambar untuk menggunakan ID konten unik (contentFetchId) 
+        // agar file yang diunggah dapat dimuat dengan benar.
+        const IMAGE_SOURCES = [
+            "uploaded:1000011841.png-d0214822-be1a-4670-84bb-f71a957e03eb", // Halaman 1 (Cover)
+            "uploaded:1000011842.png-70c7332a-1f2c-4b54-ad16-f0647436337d", // Halaman 2 (Konten)
+            "uploaded:1000011843.png-150f9881-e323-44f2-839b-5c716f90aa7d", // Halaman 3 (Konten)
+            "uploaded:1000011844.png-e454dcea-c250-492e-9774-06c5f172f5ba", // Halaman 4 (Konten)
+            "uploaded:1000011845.png-cbfd61de-4580-4270-b4af-6a7d958a7e70", // Halaman 5 (Konten)
+            "uploaded:1000011846.png-238eaeae-5f49-4bb9-80b6-5e9d8ec5b4bb", // Halaman 6 (Konten)
+            "uploaded:1000011847.png-ab5f1764-9bdb-43be-b2f9-d3228e7e854b"  // Halaman 7 (Konten Akhir)
+        ];
 
-    // Variabel untuk Latihan Soal (Page 4)
-    let currentR = 0;
-    let currentT = 0;
-    let correctArea = 0;
-
-    // --- Fungsi Navigasi Halaman ---
-
-    /** Menampilkan halaman berdasarkan nomor, dan menyembunyikan sisanya. */
-    function showPage(pageNumber) {
-        // Logika untuk menampilkan/menyembunyikan halaman
-        document.querySelectorAll('.page').forEach(page => {
-            page.classList.remove('active');
-        });
-
-        const targetPage = document.getElementById(`page-${pageNumber}`);
-        if (targetPage) {
-            targetPage.classList.add('active');
-            currentPage = pageNumber;
-        }
-
-        // Logika untuk tombol navigasi
+        const book = document.getElementById('book-element');
         const prevBtn = document.getElementById('prev-btn');
         const nextBtn = document.getElementById('next-btn');
+        const pageInfo = document.getElementById('page-info');
+        const totalPages = IMAGE_SOURCES.length; // Menggunakan IMAGE_SOURCES
+        let currentPage = 1; // Halaman yang sedang terlihat (1 adalah Cover)
 
-        prevBtn.disabled = currentPage === 1;
-        nextBtn.disabled = currentPage === totalPages;
+        // --- Fungsi Utama Flipbook ---
 
-        if (currentPage === totalPages) {
-            nextBtn.textContent = 'Selesai';
-        } else {
-            nextBtn.textContent = 'Selanjutnya \u2192'; // Unicode arrow
+        /**
+         * Mengisi elemen buku dengan semua halaman gambar.
+         */
+        function renderPages() {
+            IMAGE_SOURCES.forEach((sourceId, index) => { // Menggunakan sourceId
+                const pageElement = document.createElement('div');
+                // Halaman ganjil adalah sisi depan yang bisa dibalik (right page)
+                // Halaman genap adalah sisi belakang (left page)
+                pageElement.classList.add('page', 'absolute', 'bg-white', 'shadow-md', 'cursor-pointer');
+                pageElement.setAttribute('data-page', index + 1);
+                
+                // Urutan z-index dihitung mundur agar halaman yang lebih awal berada di atas
+                pageElement.style.zIndex = totalPages - index;
+                
+                // Tambahkan event listener untuk membalik halaman saat diklik
+                pageElement.addEventListener('click', () => {
+                    if (index + 1 === currentPage) {
+                        nextPage();
+                    } else if (index + 1 === currentPage - 1 && currentPage > 1) {
+                         // Jika mengklik halaman genap (halaman kiri)
+                        prevPage();
+                    }
+                });
+
+                const img = document.createElement('img');
+                img.src = sourceId; // Menggunakan sourceId sebagai src
+                img.alt = `Halaman ${index + 1}`;
+                img.draggable = false; // Mencegah gambar diseret
+                
+                pageElement.appendChild(img);
+                book.appendChild(pageElement);
+            });
         }
 
-        // Jika pindah ke Page 4, generate soal baru
-        if (currentPage === 4 && currentR === 0) {
-            generateNewQuestion();
+        /**
+         * Memperbarui tampilan semua halaman berdasarkan currentPage saat ini.
+         */
+        function updateFlipbook() {
+            const pages = book.querySelectorAll('.page');
+            
+            // Logika pembalikan:
+            // Halaman 1, 3, 5, ... (ganjil) adalah sisi "depan"
+            // Halaman 2, 4, 6, ... (genap) adalah sisi "belakang"
+            
+            pages.forEach((page, index) => {
+                const pageNumber = index + 1;
+                
+                // Hapus semua kelas flip sebelumnya
+                page.classList.remove('flipped-front', 'flipped-back');
+
+                if (pageNumber < currentPage) {
+                    // Halaman yang sudah terbalik sepenuhnya (berada di sisi kiri)
+                    if (pageNumber % 2 !== 0) {
+                        // Halaman ganjil yang sudah terbalik penuh
+                        page.classList.add('flipped-front');
+                        // Turunkan z-index untuk halaman yang sudah dibalik
+                        page.style.zIndex = totalPages - index + 10;
+                    } else {
+                        // Halaman genap yang sudah terbalik penuh
+                        page.classList.add('flipped-back');
+                        page.style.zIndex = totalPages - index;
+                    }
+
+                } else if (pageNumber === currentPage) {
+                    // Halaman yang sedang aktif (di kanan)
+                    if (pageNumber % 2 !== 0) {
+                        // Halaman ganjil yang belum dibalik
+                        page.style.zIndex = 100 + totalPages - index; // Z-index tertinggi
+                    } else {
+                        // Halaman genap yang belum dibalik
+                        page.style.zIndex = 10 + totalPages - index;
+                    }
+
+                } else {
+                    // Halaman yang belum sampai (tersembunyi di bawah)
+                    if (pageNumber % 2 !== 0) {
+                        page.style.zIndex = totalPages - index;
+                        // Pastikan halaman ganjil yang belum sampai posisinya normal
+                        page.style.transform = 'rotateY(0deg)'; 
+                    } else {
+                        page.style.zIndex = totalPages - index;
+                        // Pastikan halaman genap yang belum sampai posisinya terbalik
+                        page.style.transform = 'rotateY(180deg)';
+                    }
+                }
+            });
+
+            // Perbarui tombol navigasi dan info halaman
+            prevBtn.classList.toggle('hidden', currentPage <= 1);
+            // Tombol 'next' tersembunyi jika kita berada di halaman terakhir (tidak ada halaman genap lagi yang tersisa)
+            nextBtn.classList.toggle('hidden', currentPage > totalPages);
+            
+            // Tampilkan nomor halaman
+            pageInfo.textContent = `Halaman ${Math.min(currentPage, totalPages)} dari ${totalPages}`;
         }
 
-        // Jika pindah ke Page 2, reset drag and drop
-        if (currentPage === 2) {
-             resetDragAndDrop();
-        }
-    }
-
-    /** Mengubah halaman saat tombol ditekan */
-    function changePage(direction) {
-        const newPage = currentPage + direction;
-        if (newPage >= 1 && newPage <= totalPages) {
-            showPage(newPage);
-        }
-    }
-
-    // --- Logika Drag and Drop (Halaman 2) ---
-    let draggedElement = null;
-
-    function dragStart(event) {
-        draggedElement = event.target;
-        event.dataTransfer.setData('text/plain', event.target.id);
-        event.target.classList.add('opacity-50');
-    }
-
-    function dragOver(event) {
-        event.preventDefault(); // Mengizinkan drop
-        const target = event.target.closest('.dropzone');
-        if (target) {
-            target.classList.add('hover');
-        }
-    }
-
-    function dragLeave(event) {
-        const target = event.target.closest('.dropzone');
-        if (target) {
-            target.classList.remove('hover');
-        }
-    }
-
-    function drop(event) {
-        event.preventDefault();
-        const target = event.target.closest('.dropzone');
-
-        if (target && !target.classList.contains('dropped')) {
-            const data = event.dataTransfer.getData('text/plain');
-            const element = document.getElementById(data);
-            const droppedText = element.textContent.trim();
-            const correctTarget = target.dataset.target.trim();
-
-            target.classList.remove('hover');
-
-            if (droppedText === correctTarget) {
-                // Jawaban Benar
-                target.textContent = droppedText;
-                target.classList.add('dropped', 'bg-green-200');
-                element.style.display = 'none'; // Sembunyikan item yang benar
-                checkCompletion();
-            } else {
-                // Jawaban Salah
-                target.classList.add('bg-red-200');
-                target.textContent = '❌ Salah, Coba Lagi!';
-                setTimeout(() => {
-                    target.textContent = '';
-                    target.classList.remove('bg-red-200');
-                }, 1000);
+        /**
+         * Pindah ke halaman berikutnya.
+         */
+        function nextPage() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                updateFlipbook();
             }
         }
 
-        // Reset opacity regardless of drop success
-        if (draggedElement) {
-            draggedElement.classList.remove('opacity-50');
-            draggedElement = null;
-        }
-    }
-
-    function checkCompletion() {
-        const remaining = document.querySelectorAll('.draggable:not([style*="display: none"])').length;
-        const feedbackEl = document.getElementById('dd-feedback');
-
-        if (remaining === 0) {
-            feedbackEl.innerHTML = '<span class="text-green-600 text-2xl">✅ Hebat! Semua bagian tabung sudah benar.</span>';
-        } else {
-            feedbackEl.innerHTML = `<span class="text-orange-500 text-2xl">Tersisa ${remaining} bagian yang harus dipasangkan.</span>`;
-        }
-    }
-
-    function resetDragAndDrop() {
-        // Reset Draggables
-        document.querySelectorAll('.draggable').forEach(el => {
-            el.style.display = 'inline-block'; // Menggunakan inline-block karena layout sudah diubah menjadi flex
-            el.classList.remove('opacity-50');
-        });
-
-        // Reset Dropzones
-        document.querySelectorAll('.dropzone').forEach(dz => {
-            dz.textContent = '';
-            dz.classList.remove('hover', 'dropped', 'bg-green-200', 'bg-red-200');
-        });
-
-        document.getElementById('dd-feedback').innerHTML = '';
-
-        // Add event listeners (if not added globally)
-        setupDragAndDropListeners();
-    }
-
-    function setupDragAndDropListeners() {
-        document.querySelectorAll('.draggable').forEach(item => {
-            item.addEventListener('dragstart', dragStart);
-        });
-
-        document.querySelectorAll('.dropzone').forEach(zone => {
-            zone.addEventListener('dragover', dragOver);
-            zone.addEventListener('dragleave', dragLeave);
-            zone.addEventListener('drop', drop);
-        });
-    }
-
-    // --- Logika Latihan Soal (Halaman 4) ---
-
-    /** Generate nilai r dan t baru, dan hitung jawaban yang benar */
-    function generateNewQuestion() {
-        // r antara 3 dan 10
-        currentR = Math.floor(Math.random() * 8) + 3;
-        // t antara 10 dan 25
-        currentT = Math.floor(Math.random() * 16) + 10;
-
-        // Rumus Luas Permukaan: L = 2 * PI * r * (r + t)
-        const area = 2 * PI * currentR * (currentR + currentT);
-        correctArea = parseFloat(area.toFixed(2)); // Bulatkan 2 angka desimal
-
-        // Update UI
-        document.getElementById('r-value').textContent = currentR;
-        document.getElementById('t-value').textContent = currentT;
-        document.getElementById('jawaban-input').value = '';
-        document.getElementById('feedback-latihan').textContent = '';
-        document.getElementById('jawaban-input').classList.remove('border-green-500', 'border-red-500');
-    }
-
-    /** Memeriksa jawaban siswa */
-    function checkAnswer() {
-        const userAnswer = parseFloat(document.getElementById('jawaban-input').value);
-        const feedbackEl = document.getElementById('feedback-latihan');
-        const inputEl = document.getElementById('jawaban-input');
-
-        if (isNaN(userAnswer)) {
-            feedbackEl.innerHTML = '<span class="text-red-500">Mohon masukkan jawaban berupa angka.</span>';
-            return;
+        /**
+         * Pindah ke halaman sebelumnya.
+         */
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                updateFlipbook();
+            }
         }
 
-        // Toleransi kecil untuk floating point
-        const tolerance = 0.02;
+        // --- Inisialisasi Aplikasi ---
+        
+        window.onload = function() {
+            renderPages();
+            updateFlipbook(); // Tampilkan halaman awal
+            
+            // Tambahkan event listener ke tombol
+            nextBtn.addEventListener('click', nextPage);
+            prevBtn.addEventListener('click', prevPage);
+            
+            // Tangani tombol keyboard (panah kiri/kanan)
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight') {
+                    nextPage();
+                } else if (e.key === 'ArrowLeft') {
+                    prevPage();
+                }
+            });
 
-        if (Math.abs(userAnswer - correctArea) <= tolerance) {
-            feedbackEl.innerHTML = '<span class="text-green-600">🎉 Selamat! Jawaban Anda Benar!</span>';
-            inputEl.classList.remove('border-red-500');
-            inputEl.classList.add('border-green-500');
-        } else {
-            // Berikan petunjuk yang lebih rinci
-            const hint = `Jawaban yang benar adalah <span class="text-indigo-600">${correctArea.toFixed(2)}</span>.`;
-            feedbackEl.innerHTML = `<span class="text-red-600">😔 Jawaban Anda Salah. ${hint} Coba lagi!</span>`;
-            inputEl.classList.remove('border-green-500');
-            inputEl.classList.add('border-red-500');
+            // Tambahkan event listener untuk sentuhan (swipe) pada body/container
+            let touchstartX = 0;
+            let touchendX = 0;
+
+            const handleGesture = () => {
+                const swipeThreshold = 50; // Jarak minimal swipe
+                if (touchendX < touchstartX - swipeThreshold) {
+                    // Swipe ke kiri (pindah ke halaman berikutnya)
+                    nextPage();
+                }
+
+                if (touchendX > touchstartX + swipeThreshold) {
+                    // Swipe ke kanan (pindah ke halaman sebelumnya)
+                    prevPage();
+                }
+            }
+
+            const bookContainer = document.querySelector('.book-container');
+            bookContainer.addEventListener('touchstart', e => {
+                touchstartX = e.changedTouches[0].screenX;
+            }, false);
+
+            bookContainer.addEventListener('touchend', e => {
+                touchendX = e.changedTouches[0].screenX;
+                handleGesture();
+            }, false);
+            
         }
-    }
-
-    // --- Inisialisasi Aplikasi ---
-    window.onload = function() {
-        showPage(1); // Mulai dari halaman cover
-        setupDragAndDropListeners();
-    };
-
-</script>
-
+    </script>
 </body>
 </html>
 
