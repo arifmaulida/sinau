@@ -3,360 +3,234 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flipbook Interaktif</title>
+    <title>Flipbook Gambar</title>
+    <!-- Memuat Tailwind CSS untuk styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Mengatur font untuk seluruh halaman */
+        /* Mengatur font agar terlihat modern */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f7f7f7;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            overflow: hidden; /* Menyembunyikan scrollbar yang mungkin muncul */
+            background-color: #f0f4f8; /* Warna latar belakang lembut */
         }
-
-        /* Container utama flipbook */
-        .book-container {
-            perspective: 2000px; /* Jarak pandang untuk efek 3D */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            width: 100%; /* Lebar penuh */
-            height: 100%; /* Tinggi penuh */
-        }
-
-        /* Elemen buku (shell) */
-        .book {
-            width: 300px; /* Lebar standar buku */
-            height: 500px; /* Tinggi standar buku */
-            position: relative;
+        /* CSS kustom untuk transisi halaman */
+        .page-container {
+            /* Transisi dihidupkan kembali (transformasi 3D) */
+            transition: transform 0.4s ease-in-out; 
+            /* Tambahkan perspektif agar transformasi 3D (rotateY) terlihat */
+            perspective: 1500px; 
             transform-style: preserve-3d;
-            transition: transform 0.8s ease-in-out;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            border-radius: 8px;
         }
 
-        /* Halaman buku */
-        .page {
-            position: absolute;
+        /* Memastikan gambar halaman mengisi container dengan proporsional */
+        .page-image {
             width: 100%;
-            height: 100%;
-            transform-origin: left center;
-            transition: transform 0.8s ease-in-out;
-            backface-visibility: hidden; /* Menyembunyikan sisi belakang */
-            border-radius: 8px;
-            overflow: hidden;
-            box-sizing: border-box;
-            border: 1px solid #ddd;
-        }
-
-        /* Konten halaman (gambar) */
-        .page img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* Memastikan gambar menutupi halaman tanpa terdistorsi */
+            height: auto;
+            max-width: 100%;
             display: block;
-        }
-
-        /* Menyesuaikan lebar/tinggi buku berdasarkan rasio gambar */
-        /* Rasio gambar adalah sekitar 1080x1920 (9:16) */
-        .book {
-            width: min(90vw, 300px); /* Maks 300px atau 90% lebar viewport */
-            height: calc(min(90vw, 300px) * 16 / 9); /* Menjaga rasio 9:16 */
-            max-height: 90vh; /* Tidak boleh lebih tinggi dari 90% viewport height */
-        }
-
-        /* Halaman depan (cover) */
-        .page:first-child {
-            z-index: 100;
-        }
-
-        /* Halaman ganjil (halaman kanan saat terbuka) */
-        .page:nth-child(odd) {
-            border-left: 1px solid #ccc;
-        }
-
-        /* Halaman genap (halaman kiri saat terbuka) */
-        .page:nth-child(even) {
-            transform-origin: right center; /* Titik putar di kanan */
-            transform: rotateY(180deg);
-            z-index: 1;
-            border-right: 1px solid #ccc;
-        }
-
-        /* State halaman yang sudah terbalik */
-        .flipped-front {
-            transform: rotateY(-180deg); /* Membalik halaman ke kiri */
-            z-index: 99;
-        }
-
-        .flipped-back {
-            transform: rotateY(0deg); /* Menampilkan halaman belakang yang sudah terbalik (sekarang menjadi halaman kiri) */
-            z-index: 10;
-        }
-
-        /* Tombol navigasi */
-        .nav-button {
-            z-index: 200;
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            padding: 1rem;
-            border-radius: 50%;
-            background-color: rgba(0, 0, 0, 0.4);
-            color: white;
-            transition: background-color 0.3s, transform 0.1s;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-            font-size: 1.5rem;
-            user-select: none;
-            line-height: 1; /* Agar simbol panah di tengah */
-        }
-
-        .nav-button:hover {
-            background-color: rgba(0, 0, 0, 0.6);
-        }
-        
-        .nav-button:active {
-            transform: translateY(-50%) scale(0.95);
-        }
-
-        /* Posisi tombol */
-        #prev-btn { left: 10px; }
-        #next-btn { right: 10px; }
-
-        /* Menyembunyikan tombol saat tidak diperlukan */
-        .nav-button.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        /* Styling for the page number display */
-        #page-info {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(0, 0, 0, 0.5);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            z-index: 200;
+            /* Bayangan untuk meniru buku cetak */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+            border-radius: 0.75rem; /* Sudut membulat */
+            /* Pastikan bagian belakang tidak terlihat saat dirotasi */
+            backface-visibility: hidden; 
         }
     </style>
 </head>
-<body class="bg-gray-100 flex flex-col justify-center items-center h-screen w-screen">
+<body class="min-h-screen flex flex-col items-center justify-start p-4 bg-gray-100">
 
-    <div class="book-container">
-        <!-- Tombol Kembali -->
-        <button id="prev-btn" class="nav-button left-4 hidden">
-            &lsaquo;
-        </button>
+    <h1 class="text-3xl font-extrabold text-blue-800 mb-6 mt-4">Buku Digital Sederhana</h1>
 
-        <div id="book-element" class="book">
-            <!-- Halaman-halaman akan diisi di sini oleh JavaScript -->
+    <div id="book-wrapper" class="w-full max-w-lg mx-auto bg-white rounded-xl shadow-2xl p-4 md:p-6">
+        <!-- Kontainer untuk Halaman Saat Ini -->
+        <div id="page-container" class="page-container relative overflow-hidden rounded-lg">
+            <img id="page-image" class="page-image" alt="Halaman Buku">
+            
+            <!-- Indikator Loading Gambar -->
+            <div id="loading-indicator" class="absolute inset-0 flex items-center justify-center bg-gray-200 bg-opacity-80 transition-opacity duration-300 hidden">
+                <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span class="text-gray-700 font-semibold">Memuat Halaman...</span>
+            </div>
         </div>
-        
-        <!-- Tombol Selanjutnya -->
-        <button id="next-btn" class="nav-button right-4">
-            &rsaquo;
-        </button>
+
+        <!-- Kontrol Navigasi -->
+        <div class="flex justify-between items-center mt-6 gap-4">
+            <button id="prev-btn" class="flex-1 px-4 py-3 bg-blue-500 text-white font-bold rounded-lg shadow-md hover:bg-blue-600 transition duration-150 disabled:bg-gray-400 disabled:shadow-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 text-base md:text-lg">
+                &larr; Sebelumnya
+            </button>
+            
+            <span id="page-number" class="text-sm md:text-base font-semibold text-gray-700 w-24 text-center"></span>
+
+            <button id="next-btn" class="flex-1 px-4 py-3 bg-blue-500 text-white font-bold rounded-lg shadow-md hover:bg-blue-600 transition duration-150 disabled:bg-gray-400 disabled:shadow-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 text-base md:text-lg">
+                Berikutnya &rarr;
+            </button>
+        </div>
     </div>
 
-    <div id="page-info"></div>
-
     <script>
-        // Memperbarui sumber gambar untuk menggunakan ID konten unik (contentFetchId) 
-        // agar file yang diunggah dapat dimuat dengan benar.
-        const IMAGE_SOURCES = [
-            "https://arifmaulida.github.io/sinau/cvr.png", // Halaman 1 
-            "https://arifmaulida.github.io/sinau/1.png"// Halaman 2 (Konten)
-            "https://arifmaulida.github.io/sinau/2.png", // Halaman 3 (Konten)
-            "https://arifmaulida.github.io/sinau/3.png", // Halaman 4 (Konten)
-            "https://arifmaulida.github.io/sinau/4.png", // Halaman 5 (Konten)
-            "https://arifmaulida.github.io/sinau/5.png", // Halaman 6 (Konten)
-            "https://arifmaulida.github.io/sinau/6.png"  // Halaman 7 (Konten Akhir)
+        const pageImages = [
+            "https://arifmaulida.github.io/sinau/cvr.png", // Cover
+            "https://arifmaulida.github.io/sinau/1.png",  // Halaman 1
+            "https://arifmaulida.github.io/sinau/2.png",  // Halaman 2
+            "https://arifmaulida.github.io/sinau/3.png",  // Halaman 3
+            "https://arifmaulida.github.io/sinau/4.png",  // Halaman 4
+            "https://arifmaulida.github.io/sinau/5.png",  // Halaman 5
+            "https://arifmaulida.github.io/sinau/6.png",  // Halaman 6
         ];
 
-        const book = document.getElementById('book-element');
+        let currentPageIndex = 0;
+
+        const pageImage = document.getElementById('page-image');
+        const pageContainer = document.getElementById('page-container');
         const prevBtn = document.getElementById('prev-btn');
         const nextBtn = document.getElementById('next-btn');
-        const pageInfo = document.getElementById('page-info');
-        const totalPages = IMAGE_SOURCES.length; // Menggunakan IMAGE_SOURCES
-        let currentPage = 1; // Halaman yang sedang terlihat (1 adalah Cover)
+        const pageNumberSpan = document.getElementById('page-number');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const totalPages = pageImages.length;
+        const TRANSITION_DURATION = 400; // Durasi transisi 400ms
 
-        // --- Fungsi Utama Flipbook ---
-
-        /**
-         * Mengisi elemen buku dengan semua halaman gambar.
-         */
-        function renderPages() {
-            IMAGE_SOURCES.forEach((sourceId, index) => { // Menggunakan sourceId
-                const pageElement = document.createElement('div');
-                // Halaman ganjil adalah sisi depan yang bisa dibalik (right page)
-                // Halaman genap adalah sisi belakang (left page)
-                pageElement.classList.add('page', 'absolute', 'bg-white', 'shadow-md', 'cursor-pointer');
-                pageElement.setAttribute('data-page', index + 1);
-                
-                // Urutan z-index dihitung mundur agar halaman yang lebih awal berada di atas
-                pageElement.style.zIndex = totalPages - index;
-                
-                // Tambahkan event listener untuk membalik halaman saat diklik
-                pageElement.addEventListener('click', () => {
-                    if (index + 1 === currentPage) {
-                        nextPage();
-                    } else if (index + 1 === currentPage - 1 && currentPage > 1) {
-                         // Jika mengklik halaman genap (halaman kiri)
-                        prevPage();
-                    }
-                });
-
-                const img = document.createElement('img');
-                img.src = sourceId; // Menggunakan sourceId sebagai src
-                img.alt = `Halaman ${index + 1}`;
-                img.draggable = false; // Mencegah gambar diseret
-                
-                pageElement.appendChild(img);
-                book.appendChild(pageElement);
-            });
+        // Fungsi untuk menampilkan indikator loading
+        function showLoading() {
+            loadingIndicator.classList.remove('hidden');
         }
 
-        /**
-         * Memperbarui tampilan semua halaman berdasarkan currentPage saat ini.
-         */
-        function updateFlipbook() {
-            const pages = book.querySelectorAll('.page');
-            
-            // Logika pembalikan:
-            // Halaman 1, 3, 5, ... (ganjil) adalah sisi "depan"
-            // Halaman 2, 4, 6, ... (genap) adalah sisi "belakang"
-            
-            pages.forEach((page, index) => {
-                const pageNumber = index + 1;
-                
-                // Hapus semua kelas flip sebelumnya
-                page.classList.remove('flipped-front', 'flipped-back');
-
-                if (pageNumber < currentPage) {
-                    // Halaman yang sudah terbalik sepenuhnya (berada di sisi kiri)
-                    if (pageNumber % 2 !== 0) {
-                        // Halaman ganjil yang sudah terbalik penuh
-                        page.classList.add('flipped-front');
-                        // Turunkan z-index untuk halaman yang sudah dibalik
-                        page.style.zIndex = totalPages - index + 10;
-                    } else {
-                        // Halaman genap yang sudah terbalik penuh
-                        page.classList.add('flipped-back');
-                        page.style.zIndex = totalPages - index;
-                    }
-
-                } else if (pageNumber === currentPage) {
-                    // Halaman yang sedang aktif (di kanan)
-                    if (pageNumber % 2 !== 0) {
-                        // Halaman ganjil yang belum dibalik
-                        page.style.zIndex = 100 + totalPages - index; // Z-index tertinggi
-                    } else {
-                        // Halaman genap yang belum dibalik
-                        page.style.zIndex = 10 + totalPages - index;
-                    }
-
-                } else {
-                    // Halaman yang belum sampai (tersembunyi di bawah)
-                    if (pageNumber % 2 !== 0) {
-                        page.style.zIndex = totalPages - index;
-                        // Pastikan halaman ganjil yang belum sampai posisinya normal
-                        page.style.transform = 'rotateY(0deg)'; 
-                    } else {
-                        page.style.zIndex = totalPages - index;
-                        // Pastikan halaman genap yang belum sampai posisinya terbalik
-                        page.style.transform = 'rotateY(180deg)';
-                    }
-                }
-            });
-
-            // Perbarui tombol navigasi dan info halaman
-            prevBtn.classList.toggle('hidden', currentPage <= 1);
-            // Tombol 'next' tersembunyi jika kita berada di halaman terakhir (tidak ada halaman genap lagi yang tersisa)
-            nextBtn.classList.toggle('hidden', currentPage > totalPages);
-            
-            // Tampilkan nomor halaman
-            pageInfo.textContent = `Halaman ${Math.min(currentPage, totalPages)} dari ${totalPages}`;
+        // Fungsi untuk menyembunyikan indikator loading
+        function hideLoading() {
+            loadingIndicator.classList.add('hidden');
         }
 
-        /**
-         * Pindah ke halaman berikutnya.
-         */
-        function nextPage() {
-            if (currentPage < totalPages) {
-                currentPage++;
-                updateFlipbook();
+        // Fungsi utama untuk mengubah halaman dengan transisi membalik buku
+        function changePage(newIndex, direction) {
+            if (newIndex < 0 || newIndex >= totalPages || newIndex === currentPageIndex) {
+                return;
             }
-        }
 
-        /**
-         * Pindah ke halaman sebelumnya.
-         */
-        function prevPage() {
-            if (currentPage > 1) {
-                currentPage--;
-                updateFlipbook();
+            // 1. Matikan tombol navigasi sementara
+            prevBtn.disabled = true;
+            nextBtn.disabled = true;
+
+            // Tentukan rotasi keluar, rotasi awal masuk, dan titik putar (transform-origin)
+            let rotationOut, rotationInStart, origin;
+            
+            // Logika Spine Flip (Engsel di kiri/pusat)
+            if (direction === 'next') {
+                // Membalik ke kiri (membuka halaman baru)
+                rotationOut = 'rotateY(-90deg)'; // Halaman saat ini berputar menjauh ke kiri
+                rotationInStart = 'rotateY(90deg)';  // Halaman baru masuk dari kanan
+                origin = 'left center'; // Engsel di sisi kiri (spine buku)
+            } else { // 'prev' (Membalik kembali ke kanan/menutup halaman)
+                // Membalik ke kanan (menutup halaman)
+                rotationOut = 'rotateY(90deg)'; // Halaman saat ini berputar menjauh ke kanan
+                rotationInStart = 'rotateY(-90deg)';  // Halaman baru masuk dari kiri
+                origin = 'left center'; // Engsel di sisi kiri (spine buku)
             }
-        }
+            
+            // 2. Terapkan titik putar dan rotasi keluar (Halaman saat ini berputar)
+            pageContainer.style.transformOrigin = origin;
+            pageContainer.style.transform = rotationOut;
 
-        // --- Inisialisasi Aplikasi ---
+            // Tunggu transisi keluar selesai
+            setTimeout(() => {
+                // 3. Update konten (gambar) setelah halaman 'keluar'
+                currentPageIndex = newIndex;
+                const newImageUrl = pageImages[currentPageIndex];
+                
+                showLoading();
+                
+                // Muat gambar baru dan tunggu hingga selesai
+                const img = new Image();
+                img.onload = () => {
+                    pageImage.src = newImageUrl;
+                    hideLoading();
+                    
+                    // 4. Set posisi awal untuk transisi masuk (sudah di-flip, dan siap berputar balik)
+                    pageContainer.style.transformOrigin = origin; 
+                    pageContainer.style.transform = rotationInStart;
+
+                    // Force reflow/repaint agar gaya baru (posisi awal) diterapkan
+                    void pageContainer.offsetWidth; 
+
+                    // 5. Terapkan transisi masuk (rotasi kembali ke posisi normal)
+                    pageContainer.style.transform = 'rotateY(0deg)';
+                    
+                    // 6. Update UI setelah transisi masuk selesai
+                    setTimeout(updateUI, TRANSITION_DURATION);
+                };
+                img.onerror = () => {
+                    console.error("Gagal memuat gambar:", newImageUrl);
+                    hideLoading();
+                    // Kembali ke index lama jika gagal
+                    currentPageIndex = direction === 'next' ? currentPageIndex - 1 : currentPageIndex + 1;
+                    updateUI();
+                    alertMessage("Gagal memuat gambar halaman. Coba lagi atau periksa koneksi Anda.", 'error');
+                };
+                img.src = newImageUrl;
+                
+            }, TRANSITION_DURATION);
+        }
         
-        window.onload = function() {
-            renderPages();
-            updateFlipbook(); // Tampilkan halaman awal
+        // Fungsi untuk menampilkan pesan (pengganti alert)
+        function alertMessage(message, type) {
+            const messageBox = document.createElement('div');
+            messageBox.textContent = message;
+            messageBox.className = `fixed top-4 right-4 p-4 rounded-lg shadow-xl text-white font-bold transition-transform transform duration-300 ${type === 'error' ? 'bg-red-500' : 'bg-green-500'}`;
+            document.body.appendChild(messageBox);
             
-            // Tambahkan event listener ke tombol
-            nextBtn.addEventListener('click', nextPage);
-            prevBtn.addEventListener('click', prevPage);
-            
-            // Tangani tombol keyboard (panah kiri/kanan)
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'ArrowRight') {
-                    nextPage();
-                } else if (e.key === 'ArrowLeft') {
-                    prevPage();
-                }
-            });
+            setTimeout(() => {
+                messageBox.style.transform = 'translateY(-100%)';
+                messageBox.style.opacity = '0';
+                setTimeout(() => messageBox.remove(), 300);
+            }, 3000);
+        }
 
-            // Tambahkan event listener untuk sentuhan (swipe) pada body/container
-            let touchstartX = 0;
-            let touchendX = 0;
-
-            const handleGesture = () => {
-                const swipeThreshold = 50; // Jarak minimal swipe
-                if (touchendX < touchstartX - swipeThreshold) {
-                    // Swipe ke kiri (pindah ke halaman berikutnya)
-                    nextPage();
-                }
-
-                if (touchendX > touchstartX + swipeThreshold) {
-                    // Swipe ke kanan (pindah ke halaman sebelumnya)
-                    prevPage();
-                }
+        // Fungsi untuk memperbarui status tombol dan nomor halaman
+        function updateUI() {
+            // Nomor halaman (Cover sebagai Halaman 0, Halaman 1 sebagai Halaman 1, dst.)
+            if (currentPageIndex === 0) {
+                pageNumberSpan.textContent = "Cover";
+            } else {
+                pageNumberSpan.textContent = `Halaman ${currentPageIndex} dari ${totalPages - 1}`;
             }
 
-            const bookContainer = document.querySelector('.book-container');
-            bookContainer.addEventListener('touchstart', e => {
-                touchstartX = e.changedTouches[0].screenX;
-            }, false);
-
-            bookContainer.addEventListener('touchend', e => {
-                touchendX = e.changedTouches[0].screenX;
-                handleGesture();
-            }, false);
+            // Status tombol
+            prevBtn.disabled = currentPageIndex === 0;
+            nextBtn.disabled = currentPageIndex === totalPages - 1;
             
+            // Aktifkan kembali tombol setelah update selesai
+            setTimeout(() => {
+                prevBtn.disabled = currentPageIndex === 0;
+                nextBtn.disabled = currentPageIndex === totalPages - 1;
+            }, 50); 
         }
+
+        // Event Listeners
+        prevBtn.addEventListener('click', () => {
+            if (currentPageIndex > 0) {
+                changePage(currentPageIndex - 1, 'prev'); // Tambahkan direction: 'prev'
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentPageIndex < totalPages - 1) {
+                changePage(currentPageIndex + 1, 'next'); // Tambahkan direction: 'next'
+            }
+        });
+        
+        // Inisialisasi tampilan awal
+        function initializeBook() {
+            // Muat cover tanpa transisi awal
+            currentPageIndex = 0;
+            pageImage.src = pageImages[currentPageIndex];
+            // Pastikan transform di reset ke default untuk halaman awal
+            pageContainer.style.transform = 'rotateY(0deg)'; 
+            pageContainer.style.transformOrigin = 'center center'; // Default origin
+            updateUI();
+        }
+
+        window.onload = initializeBook;
     </script>
+
 </body>
 </html>
 
