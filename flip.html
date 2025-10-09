@@ -6,87 +6,174 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Flipbook - Sinau</title>
   <style>
-    :root{
+    :root {
       --book-width: 900px;
       --book-height: 600px;
       --page-radius: 8px;
       --transition-duration: 800ms;
-    }
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:#f3f4f6;display:flex;align-items:center;justify-content:center}
-    .stage{perspective:2200px;width:95vw;max-width:var(--book-width);height:80vh;max-height:var(--book-height);display:flex;align-items:center;justify-content:center}
-    .book{
-      position:relative;
-      width:100%;
-      height:100%;
-      transform-style:preserve-3d;
-      display:block;
-    }
-    .page{
-      --w:100%;
-      --h:100%;
-      position:absolute;
-      top:0;left:0;
-      width:100%;height:100%;
-      transform-style:preserve-3d;
-      transform-origin:left center;
-      transition:transform var(--transition-duration) cubic-bezier(.2,.8,.2,1), box-shadow var(--transition-duration);
-      box-shadow: 0 6px 18px rgba(0,0,0,0.15);
-      border-radius:var(--page-radius);
-      overflow:hidden;
-      background-size:cover;background-position:center center;background-repeat:no-repeat;
-      backface-visibility:hidden;
-    }
-    /* pages that have been flipped rotate to -180deg */
-    .page.flipped{transform: rotateY(-180deg); z-index:0; box-shadow: 0 2px 8px rgba(0,0,0,0.08);} /* right face (back) so when rotated you don't see white */
-.page::after{
-  content:"";
-  position:absolute;inset:0;
-  background:linear-gradient(90deg, rgba(0,0,0,0.03), rgba(255,255,255,0));
-  pointer-events:none;
-  transform:translateZ(-1px);
+    }html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Inter, system-ui, Arial, sans-serif;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* stack order: first page on top */
-.page[data-index="0"]{z-index:100}
-.page[data-index="1"]{z-index:99}
-.page[data-index="2"]{z-index:98}
-.page[data-index="3"]{z-index:97}
-.page[data-index="4"]{z-index:96}
-.page[data-index="5"]{z-index:95}
-.page[data-index="6"]{z-index:94}
-
-/* subtle shading to simulate depth */
-.page .label{
-  position:absolute;left:12px;top:12px;padding:6px 10px;background:rgba(255,255,255,0.75);backdrop-filter:blur(4px);border-radius:6px;font-weight:600;font-size:13px;color:#111
+.stage {
+  perspective: 2200px;
+  width: 95vw;
+  max-width: var(--book-width);
+  height: 80vh;
+  max-height: var(--book-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
 }
 
-/* controls */
-.controls{position:absolute;right:12px;bottom:12px;display:flex;gap:8px}
-button{background:#111;color:#fff;border:0;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:600;box-shadow:0 6px 18px rgba(0,0,0,0.12)}
-button[disabled]{opacity:0.45;cursor:not-allowed}
+.book {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  display: block;
+}
 
-/* small screens adjustments */
-@media (max-width:600px){
-  :root{--transition-duration:600ms}
-  .page .label{left:8px;top:8px;padding:5px 8px;font-size:12px}
-  button{padding:8px 10px;font-size:13px}
+.page {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transform-origin: left center;
+  transition: transform var(--transition-duration) cubic-bezier(.2, .8, .2, 1), box-shadow var(--transition-duration);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  border-radius: var(--page-radius);
+  overflow: hidden;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  backface-visibility: hidden;
+}
+
+.page.flipped {
+  transform: rotateY(-180deg);
+  z-index: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.page::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0));
+  pointer-events: none;
+  transform: translateZ(-1px);
+}
+
+.page .label {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(4px);
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  color: #111;
+}
+
+.controls {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  gap: 8px;
+  z-index: 999;
+}
+
+button {
+  background: #111;
+  color: #fff;
+  border: 0;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+button[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Tablet responsiveness */
+@media (max-width: 1024px) {
+  :root {
+    --book-width: 700px;
+    --book-height: 500px;
+  }
+  .controls button {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 600px) {
+  :root {
+    --book-width: 90vw;
+    --book-height: 65vh;
+    --transition-duration: 600ms;
+  }
+
+  .stage {
+    width: 100vw;
+    height: 70vh;
+  }
+
+  .page .label {
+    left: 8px;
+    top: 8px;
+    padding: 5px 8px;
+    font-size: 12px;
+  }
+
+  button {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .controls {
+    position: static;
+    margin-top: 12px;
+    justify-content: center;
+  }
+
+  body {
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-top: 20px;
+  }
 }
 
   </style>
 </head>
 <body>
   <div class="stage">
-    <div class="book" id="book">
-      <!-- We'll render pages by JS. Each .page is positioned on top of the next. -->
-    </div>
-    <div class="controls" aria-hidden="false">
+    <div class="book" id="book"></div>
+    <div class="controls">
       <button id="prev">◀ Sebelumnya</button>
       <button id="next">Berikutnya ▶</button>
     </div>
   </div>  <script>
-    // Image sources
     const images = [
-      'https://arifmaulida.github.io/sinau/cvr.png', // cover
+      'https://arifmaulida.github.io/sinau/cvr.png',
       'https://arifmaulida.github.io/sinau/1.png',
       'https://arifmaulida.github.io/sinau/2.png',
       'https://arifmaulida.github.io/sinau/3.png',
@@ -96,83 +183,63 @@ button[disabled]{opacity:0.45;cursor:not-allowed}
     ];
 
     const book = document.getElementById('book');
-    let current = 0; // how many pages are flipped (0 = showing cover unflipped)
+    let current = 0;
 
-    // Create page elements from images. First image is at top of stack.
-    images.forEach((src, i)=>{
+    images.forEach((src, i) => {
       const page = document.createElement('div');
       page.className = 'page';
       page.dataset.index = i;
       page.style.backgroundImage = `url(${src})`;
-      // add small label for debugging / UX
       const label = document.createElement('div');
       label.className = 'label';
       label.textContent = i === 0 ? 'Cover' : `Halaman ${i}`;
       page.appendChild(label);
-      // clicking a page flips forward if it's the topmost unflipped page
-      page.addEventListener('click', e=>{
-        // if clicked page index equals current => flip forward
+      page.addEventListener('click', e => {
         const idx = Number(page.dataset.index);
-        if(idx === current){ nextPage(); }
-        else if(idx < current){ // flip back to that page
-          goTo(idx);
-        }
+        if (idx === current) nextPage();
+        else if (idx < current) goTo(idx);
       });
       book.appendChild(page);
     });
 
     const pages = Array.from(document.querySelectorAll('.page'));
 
-    function render(){
-      // apply flipped class to pages < current
-      pages.forEach((p, i)=>{
-        if(i < current) p.classList.add('flipped');
+    function render() {
+      pages.forEach((p, i) => {
+        if (i < current) p.classList.add('flipped');
         else p.classList.remove('flipped');
       });
-      // enable/disable controls
       document.getElementById('prev').disabled = current === 0;
-      document.getElementById('next').disabled = current === pages.length-1;
+      document.getElementById('next').disabled = current === pages.length - 1;
     }
 
-    function nextPage(){
-      if(current < pages.length-1){
+    function nextPage() {
+      if (current < pages.length - 1) {
         current += 1;
         render();
       }
     }
-    function prevPage(){
-      if(current > 0){
+
+    function prevPage() {
+      if (current > 0) {
         current -= 1;
         render();
       }
     }
-    function goTo(index){
-      // index: the page index to make the top-most unflipped page
-      current = Math.max(0, Math.min(index, pages.length-1));
+
+    function goTo(index) {
+      current = Math.max(0, Math.min(index, pages.length - 1));
       render();
     }
 
-    // controls
     document.getElementById('next').addEventListener('click', nextPage);
     document.getElementById('prev').addEventListener('click', prevPage);
 
-    // keyboard navigation
-    document.addEventListener('keydown', e=>{
-      if(e.key === 'ArrowRight' || e.key === 'PageDown') nextPage();
-      if(e.key === 'ArrowLeft' || e.key === 'PageUp') prevPage();
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight' || e.key === 'PageDown') nextPage();
+      if (e.key === 'ArrowLeft' || e.key === 'PageUp') prevPage();
     });
 
-    // initial render
     render();
-
-    // responsive tuning: maintain book aspect ratio
-    function fitBook(){
-      const stage = document.querySelector('.stage');
-      const w = stage.clientWidth;
-      const h = stage.clientHeight;
-      // nothing fancy for now
-    }
-    window.addEventListener('resize', fitBook);
-    fitBook();
   </script></body>
 </html>
