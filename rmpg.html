@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Latihan Mengisi Teks Rumpang</title>
+    <!-- Memuat Tailwind CSS untuk styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Mengatur font agar lebih mudah dibaca */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Menyesuaikan ukuran input agar mudah disentuh pada perangkat mobile */
+        .cloze-input {
+            width: 120px;
+            text-align: center;
+        }
+        @media (max-width: 640px) {
+            .cloze-input {
+                width: 80px; /* Lebih kecil di mobile */
+                padding: 4px;
+            }
+        }
+    </style>
+</head>
+<!-- Latar belakang utama (layer laptop) berwarna biru tua -->
+<body class="bg-blue-900 min-h-screen flex items-center justify-center p-4">
+
+    <!-- Container utama untuk soal (skin soal) berwarna biru muda -->
+    <div class="w-full max-w-2xl bg-blue-200 p-6 sm:p-8 rounded-xl shadow-2xl">
+        <h1 class="text-2xl font-bold text-blue-900 mb-4">Latihan Teks Rumpang Berdasarkan Audio</h1>
+        <hr class="border-blue-300 mb-6">
+        
+        <!-- Bagian 1: Instruksi dan Rekaman Audio -->
+        <div class="bg-blue-100 p-4 rounded-lg mb-6 border-l-4 border-blue-500">
+            <p class="text-sm font-semibold text-blue-700 mb-3">1. Dengarkan rekaman audio berikut ini sebelum mengisi:</p>
+            <audio controls class="w-full rounded-lg">
+                <source src="https://arifmaulida.github.io/sinau/suara1.mp3" type="audio/mpeg">
+                Browser Anda tidak mendukung elemen audio.
+            </audio>
+        </div>
+
+        <!-- Bagian 2: Teks Rumpang -->
+        <div class="bg-white p-5 rounded-xl shadow-inner mb-6">
+            <p class="text-base text-gray-800 leading-relaxed">
+                <span class="font-medium text-lg">My name is Ahmad, I'm a 7th grade student at MTs NU TBS Kudus. I'm originally from</span>
+                
+                <input type="text" id="blank1" class="cloze-input bg-white border border-gray-400 rounded-md focus:border-blue-500 focus:ring focus:ring-blue-500/50 p-1 mx-1 text-gray-800">
+                <span class="font-medium text-lg">, and I live in Ath Thullab Islamic Boarding School in Kudus. I really enjoy</span>
+                
+                <input type="text" id="blank2" class="cloze-input bg-white border border-gray-400 rounded-md focus:border-blue-500 focus:ring focus:ring-blue-500/50 p-1 mx-1 text-gray-800">
+                <span class="font-medium text-lg">at this school and I really</span>
+                
+                <input type="text" id="blank3" class="cloze-input bg-white border border-gray-400 rounded-md focus:border-blue-500 focus:ring focus:ring-blue-500/50 p-1 mx-1 text-gray-800">
+                <span class="font-medium text-lg">my friends.</span>
+            </p>
+        </div>
+
+        <!-- Bagian 3: Tombol dan Hasil Feedback -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <button id="checkButton" onclick="checkAnswers()" class="flex-1 w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 14.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+                Hasil (Cek Jawaban)
+            </button>
+            <button id="resetButton" onclick="resetForm()" class="flex-1 w-full sm:w-auto bg-gray-400 hover:bg-gray-500 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M4 2a1 1 0 011 1v2.102a2.25 2.25 0 001.94 2.22l2.309 3.203a2.25 2.25 0 010 2.805l-2.31 3.203a2.25 2.25 0 00-1.939 2.22V17a1 1 0 11-2 0v-2.102a2.25 2.25 0 00-1.939-2.22l-2.31-3.203a2.25 2.25 0 010-2.805l2.308-3.203a2.25 2.25 0 001.94-2.22V3a1 1 0 011-1zm6 4a1 1 0 011 1v2.102a2.25 2.25 0 001.94 2.22l2.309 3.203a2.25 2.25 0 010 2.805l-2.31 3.203a2.25 2.25 0 00-1.939 2.22V17a1 1 0 11-2 0v-2.102a2.25 2.25 0 00-1.939-2.22l-2.31-3.203a2.25 2.25 0 010-2.805l2.308-3.203a2.25 2.25 0 001.94-2.22V7a1 1 0 011-1z" />
+                </svg>
+                Reset
+            </button>
+        </div>
+        
+        <!-- Kotak Feedback/Hasil -->
+        <div id="feedback" class="mt-6 p-4 text-center rounded-lg font-semibold transition duration-500 ease-in-out hidden">
+            <!-- Pesan feedback akan muncul di sini -->
+        </div>
+
+    </div>
+
+    <script>
+        // Jawaban yang benar (case-insensitive)
+        const CORRECT_ANSWERS = {
+            'blank1': 'riau',
+            'blank2': 'studying',
+            'blank3': 'love'
+        };
+
+        const feedbackElement = document.getElementById('feedback');
+        const blank1Input = document.getElementById('blank1');
+        const blank2Input = document.getElementById('blank2');
+        const blank3Input = document.getElementById('blank3');
+
+        /**
+         * Membersihkan dan menormalisasi jawaban dari input.
+         * @param {string} value - Nilai dari input.
+         * @returns {string} Nilai yang sudah dibersihkan.
+         */
+        function cleanInput(value) {
+            return value.trim().toLowerCase();
+        }
+
+        /**
+         * Memeriksa semua jawaban yang telah diisi peserta didik.
+         */
+        function checkAnswers() {
+            const answer1 = cleanInput(blank1Input.value);
+            const answer2 = cleanInput(blank2Input.value);
+            const answer3 = cleanInput(blank3Input.value);
+
+            // Pemeriksaan kondisi:
+            const isCorrect1 = answer1 === CORRECT_ANSWERS['blank1'];
+            const isCorrect2 = answer2 === CORRECT_ANSWERS['blank2'];
+            const isCorrect3 = answer3 === CORRECT_ANSWERS['blank3'];
+
+            // Cek apakah semua jawaban benar
+            if (isCorrect1 && isCorrect2 && isCorrect3) {
+                // Semua benar
+                displayFeedback("Hebat. Jawaban kamu benar!", "bg-green-500 text-white");
+                
+                // Beri highlight hijau pada input yang benar (jika ingin)
+                [blank1Input, blank2Input, blank3Input].forEach(input => {
+                    input.classList.remove('border-red-500');
+                    input.classList.add('border-green-500', 'ring-2', 'ring-green-300');
+                    input.disabled = true; // Nonaktifkan input jika benar
+                });
+            } else {
+                // Ada yang salah
+                displayFeedback("Maaf. Jawaban anda salah, ulangi lagi.", "bg-red-500 text-white");
+
+                // Beri highlight merah pada input yang salah
+                // Untuk kasus ini, kita hanya ingin memberikan feedback umum, tapi kita tetap bisa
+                // memberikan petunjuk visual minimal:
+                if (!isCorrect1) {
+                    blank1Input.classList.add('border-red-500');
+                    blank1Input.classList.remove('border-green-500');
+                } else {
+                    blank1Input.classList.remove('border-red-500');
+                    blank1Input.classList.add('border-green-500');
+                }
+                
+                if (!isCorrect2) {
+                    blank2Input.classList.add('border-red-500');
+                    blank2Input.classList.remove('border-green-500');
+                } else {
+                    blank2Input.classList.remove('border-red-500');
+                    blank2Input.classList.add('border-green-500');
+                }
+
+                if (!isCorrect3) {
+                    blank3Input.classList.add('border-red-500');
+                    blank3Input.classList.remove('border-green-500');
+                } else {
+                    blank3Input.classList.remove('border-red-500');
+                    blank3Input.classList.add('border-green-500');
+                }
+            }
+        }
+
+        /**
+         * Menampilkan pesan feedback di kotak hasil.
+         * @param {string} message - Pesan yang akan ditampilkan.
+         * @param {string} className - Kelas Tailwind CSS untuk styling kotak feedback.
+         */
+        function displayFeedback(message, className) {
+            feedbackElement.textContent = message;
+            feedbackElement.className = `mt-6 p-4 text-center rounded-lg font-semibold transition duration-500 ease-in-out ${className}`;
+            feedbackElement.style.display = 'block';
+        }
+
+        /**
+         * Mereset form, mengosongkan input dan feedback.
+         */
+        function resetForm() {
+            blank1Input.value = '';
+            blank2Input.value = '';
+            blank3Input.value = '';
+            
+            // Hapus semua kelas highlight dan aktifkan kembali input
+            [blank1Input, blank2Input, blank3Input].forEach(input => {
+                input.classList.remove('border-red-500', 'border-green-500', 'ring-2', 'ring-green-300');
+                input.classList.add('border-gray-400'); // Kembalikan border default
+                input.disabled = false;
+            });
+
+            feedbackElement.style.display = 'none';
+            feedbackElement.textContent = '';
+        }
+    </script>
+</body>
+</html>
