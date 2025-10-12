@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <!-- Penting untuk Responsivitas: Memastikan lebar sama dengan lebar perangkat -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Permainan Memecahkan Kode</title>
+    <!-- Memuat Tailwind CSS untuk styling modern dan responsif -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Mengatur font Inter dan memastikan halaman mengisi seluruh layar */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem; /* Memberi margin aman di sekitar layar smartphone */
+        }
+        .container-card {
+            max-width: 500px; /* Batas lebar pada desktop/tablet */
+            width: 100%; /* Selalu lebar penuh pada mobile */
+            background-color: white;
+            padding: 2rem;
+            border-radius: 1.5rem; /* Sudut membulat */
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 5px 15px -5px rgba(0, 0, 0, 0.04);
+            transition: transform 0.3s ease-in-out;
+        }
+        /* Style untuk huruf-huruf kode agar lebih menonjol dan responsif */
+        #encryptedCode {
+            letter-spacing: 0.15em;
+            font-size: 1.5rem; /* Sedikit dikecilkan untuk layar super kecil */
+            line-height: 2.25rem;
+            word-break: break-all; /* Memastikan kata yang sangat panjang bisa pecah baris */
+        }
+        @media (min-width: 640px) {
+            #encryptedCode {
+                font-size: 1.75rem; /* Kembali normal pada layar yang lebih besar */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container-card">
+        <h1 class="text-3xl font-bold text-center text-indigo-700 mb-2">Permainan Memecahkan Kode</h1>
+        <p class="text-center text-gray-500 mb-6">Sandi Caesar: Pecahkan kalimat inspiratif yang tersembunyi!</p>
+
+        <!-- Area Cara Pengerjaan -->
+        <div class="bg-blue-100 border-l-4 border-blue-500 p-4 mb-6 rounded-lg">
+            <h2 class="text-xl font-semibold text-blue-800 mb-2">💡 Cara Pengerjaan (Sandi Caesar)</h2>
+            <ul class="list-disc list-inside text-gray-700 space-y-1 text-sm">
+                <li>Kalimat tersembunyi telah dienkripsi menggunakan **Kunci Geser (Shift Key)** berupa angka.</li>
+                <li>Untuk memecahkan kode, Anda harus menggeser setiap huruf pada kalimat acak ke **arah mundur** sebanyak nilai kunci.</li>
+                <li>Perhatikan **Informasi Kunci** di bawah ini untuk mengetahui berapa langkah geseran yang diperlukan.</li>
+                <li>Masukkan hasil dekripsi Anda di kolom jawaban (gunakan huruf kapital).</li>
+            </ul>
+        </div>
+        <!-- Akhir Area Cara Pengerjaan -->
+
+        <!-- Area Informasi Kode -->
+        <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4 mb-6 rounded-lg">
+            <h2 class="text-xl font-semibold text-indigo-800 mb-2">Perintah Kode</h2>
+            <p class="text-gray-700 font-medium mb-3">Pecahkan kalimat yang tersembunyi berikut ini:</p>
+
+            <!-- Kalimat yang Dienkripsi -->
+            <p id="encryptedCode" class="text-gray-900 font-extrabold bg-white p-3 rounded-lg shadow-inner text-center">
+                Memuat Kode...
+            </p>
+        </div>
+
+        <!-- Tampilkan Kunci (Key) seperti yang diminta -->
+        <div class="bg-yellow-50 border-l-4 border-yellow-500 p-3 mb-6 rounded-lg">
+            <p class="text-sm font-medium text-yellow-800">
+                Informasi Kunci (Shift Key): <span id="keyDisplay" class="font-extrabold text-lg text-yellow-900">N/A</span>
+            </p>
+        </div>
+
+        <!-- Input Pengguna: Menggunakan padding vertikal besar (py-3) agar mudah disentuh -->
+        <div class="mb-4">
+            <label for="userAnswer" class="block text-sm font-medium text-gray-700 mb-2">Masukkan Jawaban Anda (Huruf Kapital, tanpa spasi):</label>
+            <input type="text" id="userAnswer"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-lg uppercase"
+                   placeholder="Tulis di sini"
+                   oninput="this.value = this.value.toUpperCase()">
+        </div>
+
+        <!-- Tombol Aksi: Menggunakan w-full agar lebar penuh -->
+        <button id="checkButton"
+                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl transition duration-150 ease-in-out shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50">
+            Cek Jawaban
+        </button>
+        
+        <!-- Area Pesan Feedback -->
+        <div id="message" class="mt-6 p-4 text-center rounded-lg font-semibold min-h-[4rem]">
+            <!-- Pesan akan muncul di sini -->
+        </div>
+
+        <!-- Tombol Ulangi/Reset -->
+        <button id="resetButton"
+                class="w-full mt-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-xl transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-400">
+            Ulangi Permainan
+        </button>
+        
+        <!-- Tombol Coba Soal Lain (BARU) -->
+        <button id="newPuzzleButton"
+                class="w-full mt-3 bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-2 px-4 rounded-xl transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-fuchsia-400 focus:ring-opacity-50">
+            Coba Soal yang Lain
+        </button>
+    </div>
+
+    <script>
+        // Data Permainan: Kumpulan kalimat inspiratif dan kunci geser (key) terkait.
+        const PUZZLES = [
+            { message: "MIMPI BESAR DIMULAI DENGAN SATU LANGKAH KECIL", key: 4 }, 
+            { message: "KESUKSESAN BUKAN KUNCI KEBAHAGIAAN", key: 7 }, 
+            { message: "JANGAN PERNAH MENYERAH PADA MIMPI ANDA", key: 10 },
+            { message: "KEGAGALAN ADALAH GURU TERBAIK", key: 5 },
+            { message: "HIDUP ADALAH PERJALANAN BUKAN TUJUAN", key: 3 },
+            { message: "WAKTU ADALAH EMAS JANGAN SIA SIAKAN", key: 1 }
+        ];
+
+        // Variabel yang akan menyimpan teka-teki saat ini
+        let currentSecretMessage = "";
+        let currentShiftKey = 0;
+        let currentEncryptedCode = "";
+
+        // ===================================
+        // Logika Sandi Caesar (Caesar Cipher)
+        // ===================================
+
+        // Fungsi enkripsi yang digunakan untuk membuat kode acak
+        function encrypt(text, key) {
+            let result = '';
+            const ALPHABET_SIZE = 26;
+            const A_CODE = 'A'.charCodeAt(0);
+
+            for (let i = 0; i < text.length; i++) {
+                let char = text[i];
+
+                if (char >= 'A' && char <= 'Z') {
+                    let charCode = char.charCodeAt(0);
+                    // Rumus enkripsi: (huruf_posisi + key) mod 26
+                    let encryptedCode = (charCode - A_CODE + key) % ALPHABET_SIZE + A_CODE;
+                    result += String.fromCharCode(encryptedCode);
+                } else {
+                    // Biarkan spasi dan karakter lain apa adanya
+                    result += char;
+                }
+            }
+            return result;
+        }
+
+        // ===================================
+        // DOM Manipulasi dan Logika Game
+        // ===================================
+
+        const encryptedCodeDisplay = document.getElementById('encryptedCode');
+        const keyDisplay = document.getElementById('keyDisplay');
+        const userAnswerInput = document.getElementById('userAnswer');
+        const checkButton = document.getElementById('checkButton');
+        const resetButton = document.getElementById('resetButton');
+        const newPuzzleButton = document.getElementById('newPuzzleButton'); // Tombol baru
+        const messageArea = document.getElementById('message');
+
+        /**
+         * Memilih teka-teki baru secara acak dan mengenkripsinya.
+         */
+        function generateNewPuzzle() {
+            let newPuzzle;
+            // Loop untuk memastikan teka-teki yang dipilih BUKAN yang sedang dimainkan
+            do {
+                const randomIndex = Math.floor(Math.random() * PUZZLES.length);
+                newPuzzle = PUZZLES[randomIndex];
+            } while (newPuzzle.message === currentSecretMessage && PUZZLES.length > 1); // Hanya loop jika ada lebih dari 1 puzzle
+            
+            currentSecretMessage = newPuzzle.message.toUpperCase();
+            currentShiftKey = newPuzzle.key;
+            // Enkripsi pesan baru
+            currentEncryptedCode = encrypt(currentSecretMessage, currentShiftKey);
+        }
+
+        /**
+         * Menginisialisasi atau mereset game dengan teka-teki baru.
+         */
+        function initializeGame() {
+            // 1. Generate puzzle baru
+            generateNewPuzzle(); 
+
+            // 2. Tampilkan kode terenkripsi dan kunci
+            encryptedCodeDisplay.textContent = currentEncryptedCode;
+            keyDisplay.textContent = currentShiftKey;
+            
+            // 3. Atur ulang tampilan input dan pesan
+            userAnswerInput.value = '';
+            messageArea.textContent = 'Ayo, coba tebak kodenya!';
+            messageArea.className = 'mt-6 p-4 text-center rounded-lg font-semibold bg-gray-100 text-gray-700 min-h-[4rem]';
+            
+            // 4. Aktifkan tombol cek
+            checkButton.disabled = false;
+        }
+
+        /**
+         * Memeriksa jawaban pengguna terhadap pesan rahasia saat ini.
+         */
+        function checkAnswer() {
+            const userAnswer = userAnswerInput.value.trim().toUpperCase();
+            
+            // Hapus semua spasi dari pesan rahasia untuk perbandingan yang lebih ketat
+            const cleanedSecret = currentSecretMessage.replace(/\s/g, '');
+            const cleanedAnswer = userAnswer.replace(/\s/g, '');
+
+            if (cleanedAnswer === cleanedSecret) {
+                // Jawaban Benar
+                messageArea.textContent = `SELAMAT! Anda berhasil memecahkan kodenya: "${currentSecretMessage}"`;
+                messageArea.className = 'mt-6 p-4 text-center rounded-lg font-semibold bg-green-100 text-green-700 border border-green-400 min-h-[4rem]';
+                // Nonaktifkan tombol setelah berhasil
+                checkButton.disabled = true;
+            } else if (cleanedAnswer === '') {
+                // Input Kosong
+                messageArea.textContent = 'Mohon masukkan tebakan Anda.';
+                messageArea.className = 'mt-6 p-4 text-center rounded-lg font-semibold bg-yellow-100 text-yellow-700 border border-yellow-400 min-h-[4rem]';
+            } else {
+                // Jawaban Salah
+                messageArea.textContent = `Jawaban Anda ("${userAnswer}") SALAH. Coba lagi! Ingat, Anda perlu menggeser mundur (${currentShiftKey} langkah).`;
+                messageArea.className = 'mt-6 p-4 text-center rounded-lg font-semibold bg-red-100 text-red-700 border border-red-400 min-h-[4rem]';
+            }
+        }
+
+        // Event Listeners
+        checkButton.addEventListener('click', checkAnswer);
+        
+        // Tombol Reset dan Coba Soal Lain sekarang memanggil initializeGame()
+        resetButton.addEventListener('click', initializeGame);
+        newPuzzleButton.addEventListener('click', initializeGame);
+
+        // Jalankan inisialisasi game saat halaman dimuat
+        window.onload = initializeGame;
+
+    </script>
+</body>
+</html>
