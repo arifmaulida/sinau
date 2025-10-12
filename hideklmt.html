@@ -52,18 +52,18 @@
         <div class="bg-blue-100 border-l-4 border-blue-500 p-4 mb-6 rounded-lg">
             <h2 class="text-xl font-semibold text-blue-800 mb-2">💡 Cara Pengerjaan (Sandi Caesar)</h2>
             <ul class="list-disc list-inside text-gray-700 space-y-1 text-sm">
-                <li>Kalimat tersembunyi telah dienkripsi menggunakan <b>Kunci Geser (Shift Key)</b> berupa angka.</li>
-                <li>Untuk memecahkan kode, Anda harus menggeser setiap huruf pada kalimat acak ke-<b>arah mundur</b> sebanyak nilai kunci.</li>
-                <li>Perhatikan <b>Informasi Kunci</b> di bawah ini untuk mengetahui berapa langkah geseran yang diperlukan.</li>
+                <li>Kalimat tersembunyi telah dienkripsi menggunakan Kunci Geser (Shift Key) berupa angka.</li>
+                <li>Untuk memecahkan kode, Anda harus menggeser setiap huruf pada kalimat acak ke arah mundur sebanyak nilai kunci.</li>
+                <li>Perhatikan Informasi Kunci di bawah ini untuk mengetahui berapa langkah geseran yang diperlukan.</li>
                 <li>Masukkan hasil dekripsi Anda di kolom jawaban (gunakan huruf kapital).</li>
             </ul>
         </div>
         <!-- Akhir Area Cara Pengerjaan -->
 
-        <!-- Area Informasi Kode -->
+        <!-- Area Informasi Kode (Diperbarui: Menghilangkan judul "Perintah Kode") -->
         <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4 mb-6 rounded-lg">
-            <h2 class="text-xl font-semibold text-indigo-800 mb-2">Perintah Kode</h2>
-            <p class="text-gray-700 font-medium mb-3">Pecahkan kalimat yang tersembunyi berikut ini:</p>
+            <!-- Menampilkan Perintah Utama langsung tanpa judul -->
+            <p class="text-xl font-semibold text-indigo-800 mb-3">Pecahkan kalimat yang tersembunyi berikut ini:</p>
 
             <!-- Kalimat yang Dienkripsi -->
             <p id="encryptedCode" class="text-gray-900 font-extrabold bg-white p-3 rounded-lg shadow-inner text-center">
@@ -93,22 +93,18 @@
             Cek Jawaban
         </button>
         
-        <!-- Area Pesan Feedback -->
-        <div id="message" class="mt-6 p-4 text-center rounded-lg font-semibold min-h-[4rem]">
+        <!-- Area Pesan Feedback (Ditambahkan class 'hidden' untuk menyembunyikan secara default) -->
+        <div id="message" class="mt-6 p-4 text-center rounded-lg font-semibold min-h-[4rem] hidden">
             <!-- Pesan akan muncul di sini -->
         </div>
 
-        <!-- Tombol Ulangi/Reset -->
+        <!-- Tombol Ulangi/Reset (Diubah ke warna soft emerald) -->
         <button id="resetButton"
-                class="w-full mt-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-xl transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-400">
+                class="w-full mt-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold py-2 px-4 rounded-xl transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-400">
             Ulangi Permainan
         </button>
         
-        <!-- Tombol Coba Soal Lain (BARU) -->
-        <button id="newPuzzleButton"
-                class="w-full mt-3 bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-2 px-4 rounded-xl transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-fuchsia-400 focus:ring-opacity-50">
-            Coba Soal yang Lain
-        </button>
+        <!-- Tombol Coba Soal Lain (Dihilangkan) -->
     </div>
 
     <script>
@@ -162,7 +158,6 @@
         const userAnswerInput = document.getElementById('userAnswer');
         const checkButton = document.getElementById('checkButton');
         const resetButton = document.getElementById('resetButton');
-        const newPuzzleButton = document.getElementById('newPuzzleButton'); // Tombol baru
         const messageArea = document.getElementById('message');
 
         /**
@@ -195,8 +190,9 @@
             
             // 3. Atur ulang tampilan input dan pesan
             userAnswerInput.value = '';
-            messageArea.textContent = 'Ayo, coba tebak kodenya!';
-            messageArea.className = 'mt-6 p-4 text-center rounded-lg font-semibold bg-gray-100 text-gray-700 min-h-[4rem]';
+            messageArea.textContent = ''; 
+            // Sembunyikan pesan saat diinisialisasi
+            messageArea.className = 'mt-6 p-4 text-center rounded-lg font-semibold bg-gray-100 text-gray-700 min-h-[4rem] hidden';
             
             // 4. Aktifkan tombol cek
             checkButton.disabled = false;
@@ -212,29 +208,41 @@
             const cleanedSecret = currentSecretMessage.replace(/\s/g, '');
             const cleanedAnswer = userAnswer.replace(/\s/g, '');
 
+            // Kelas yang akan digunakan untuk styling, *tanpa* 'hidden'
+            let newClassName;
+            let newMessage;
+            let isCorrect = false;
+
             if (cleanedAnswer === cleanedSecret) {
                 // Jawaban Benar
-                messageArea.textContent = `SELAMAT! Anda berhasil memecahkan kodenya: "${currentSecretMessage}"`;
-                messageArea.className = 'mt-6 p-4 text-center rounded-lg font-semibold bg-green-100 text-green-700 border border-green-400 min-h-[4rem]';
-                // Nonaktifkan tombol setelah berhasil
-                checkButton.disabled = true;
+                newMessage = `SELAMAT! Anda berhasil memecahkan kodenya: "${currentSecretMessage}"`;
+                newClassName = 'mt-6 p-4 text-center rounded-lg font-semibold bg-green-100 text-green-700 border border-green-400 min-h-[4rem]';
+                isCorrect = true;
             } else if (cleanedAnswer === '') {
                 // Input Kosong
-                messageArea.textContent = 'Mohon masukkan tebakan Anda.';
-                messageArea.className = 'mt-6 p-4 text-center rounded-lg font-semibold bg-yellow-100 text-yellow-700 border border-yellow-400 min-h-[4rem]';
+                newMessage = 'Mohon masukkan tebakan Anda.';
+                newClassName = 'mt-6 p-4 text-center rounded-lg font-semibold bg-yellow-100 text-yellow-700 border border-yellow-400 min-h-[4rem]';
             } else {
                 // Jawaban Salah
-                messageArea.textContent = `Jawaban Anda ("${userAnswer}") SALAH. Coba lagi! Ingat, Anda perlu menggeser mundur (${currentShiftKey} langkah).`;
-                messageArea.className = 'mt-6 p-4 text-center rounded-lg font-semibold bg-red-100 text-red-700 border border-red-400 min-h-[4rem]';
+                newMessage = `Jawaban Anda ("${userAnswer}") SALAH. Coba lagi! Ingat, Anda perlu menggeser mundur (${currentShiftKey} langkah).`;
+                newClassName = 'mt-6 p-4 text-center rounded-lg font-semibold bg-red-100 text-red-700 border border-red-400 min-h-[4rem]';
+            }
+
+            // Tampilkan pesan
+            messageArea.textContent = newMessage;
+            messageArea.className = newClassName;
+            
+            if (isCorrect) {
+                // Nonaktifkan tombol setelah berhasil
+                checkButton.disabled = true;
             }
         }
 
         // Event Listeners
         checkButton.addEventListener('click', checkAnswer);
         
-        // Tombol Reset dan Coba Soal Lain sekarang memanggil initializeGame()
+        // Tombol Reset (Ulangi Permainan) juga berfungsi untuk memulai soal baru.
         resetButton.addEventListener('click', initializeGame);
-        newPuzzleButton.addEventListener('click', initializeGame);
 
         // Jalankan inisialisasi game saat halaman dimuat
         window.onload = initializeGame;
@@ -242,4 +250,3 @@
     </script>
 </body>
 </html>
-
